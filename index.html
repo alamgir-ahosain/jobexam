@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobExam — Built by [Your Name]</title>
+<script>
+/* Apply saved/preferred theme before first paint to avoid a flash. */
+(function(){
+  try{
+    var t = localStorage.getItem("jobexam:theme");
+    if(t !== "light" && t !== "dark"){
+      t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  }catch(e){}
+})();
+</script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <p class="page-eyebrow">Portfolio · Project</p>
+    <h1 class="hero-title">Hi, I'm <span>Alamgir Hosain</span> — I build offline-first practice tools like JobExam.</h1>
+    <p class="hero-lede">JobExam is a fully offline exam-practice platform for government, bank, and IT job exams in Bangladesh. No server, no account, no internet required after the first load — everything runs and saves progress right in your browser.</p>
+    <div class="hero-actions">
+      <!-- <a class="btn" href="exams.html">Open Exam Practice App →</a> -->
+      <!-- <a class="btn btn-outline" href="#about">About this project</a> -->
+    </div>
+  </div>
+
+  <!-- ============ APP CTA — links to the current subject registry (exams.html) ============ -->
+  <div class="app-cta">
+    <div class="app-cta-text">
+      <h2>Subject Registry</h2>
+      <p>Browse every subject, track completed exams, and jump back into where you left off. This is the current live index of the app.</p>
+      <div class="app-cta-stats">
+        <span><strong>8</strong> subjects live</span>
+        <span><strong>50</strong> questions per exam</span>
+        <span><strong>100%</strong> offline</span>
+      </div>
+    </div>
+    <a class="btn btn-gold" href="exams.html">View Subjects →</a>
+  </div>
+
+  <!-- ============ ABOUT / MY WORK ============ -->
+  <div class="about-section" id="about">
+    <h2 class="section-title">About this work</h2>
+    <div class="about-grid">
+      <div class="about-bio">
+        <p>JobExam started as a way to practice for government and bank job exams without needing a data connection — every question bank, your progress, and your scores are stored locally on your own device.</p>
+        <p>The whole app is hand-built with plain HTML, CSS, and JavaScript — no framework, no build step — so it stays lightweight and works the same offline as it does online. Each subject ships as its own question bank, and new subjects can be added without touching the exam engine itself.</p>
+      </div>
+      <ul class="skill-list">
+        <li><b>Front-end:</b> HTML, CSS, vanilla JavaScript</li>
+        <li><b>Design:</b> Custom, framework-free UI systems</li>
+        <li><b>Offline-first:</b> localStorage-backed progress tracking</li>
+        <li><b>Focus:</b> Exam-prep &amp; educational tools</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/theme.js"></script>
+</body>
+</html>
