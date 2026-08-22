@@ -221,7 +221,13 @@ function showMeritList(examIndex){
   document.addEventListener("keydown", onKeydown);
 }
 
-/* ---------------- Init: gate on password, THEN fetch questions ---------------- */
+/* ---------------- Init: gate on password, THEN fetch questions ----------------
+   Exception: PREVIEW_SUBJECT_ID (see common.js) never needs the password —
+   it's a fixed 30-question demo anyone can try straight from the modal. */
+
+function isPreviewSubject(){
+  return SUBJECT && SUBJECT.id === PREVIEW_SUBJECT_ID;
+}
 
 async function initSubjectPage(subjectId){
   SUBJECT = getSubject(subjectId);
@@ -230,14 +236,7 @@ async function initSubjectPage(subjectId){
   document.getElementById("subjectTitle").textContent = SUBJECT.name;
   document.title = SUBJECT.name + " — JobExam";
 
-  // Nothing is fetched yet — show a locked placeholder immediately.
-  document.getElementById("statTotalQ").textContent = "—";
-  document.getElementById("statTotalExams").textContent = "—";
-  document.getElementById("statCompleted").textContent = "—";
-  document.getElementById("examList").innerHTML =
-    `<div class="empty-note">Enter the access password to view this subject's exams.</div>`;
-
-  requireAccess(async () => {
+  const loadQuestions = async () => {
     try{
       QUESTIONS = await getQuestionsAsync(SUBJECT);
     }catch(err){
@@ -255,9 +254,26 @@ async function initSubjectPage(subjectId){
     const m = location.hash.match(/exam=(\d+)/);
     if(m){
       const idx = parseInt(m[1],10) - 1;
-      if(idx >= 0 && idx < EXAMS) startExam(idx);
+      if(idx >= 0 && idx < EXAMS){
+        if(isPreviewSubject()) requireProfile(() => startExam(idx));
+        else startExam(idx);
+      }
     }
-  });
+  };
+
+  if(isPreviewSubject()){
+    loadQuestions();
+    return;
+  }
+
+  // Nothing is fetched yet — show a locked placeholder immediately.
+  document.getElementById("statTotalQ").textContent = "—";
+  document.getElementById("statTotalExams").textContent = "—";
+  document.getElementById("statCompleted").textContent = "—";
+  document.getElementById("examList").innerHTML =
+    `<div class="empty-note">Enter the access password to view this subject's exams.</div>`;
+
+  requireAccess(loadQuestions);
 }
 
 /* ---------------- Subject overview ---------------- */
@@ -285,6 +301,8 @@ function statusOf(examIndex){
 function renderExamList(){
   const list = document.getElementById("examList");
   list.innerHTML = "";
+  list.classList.add("ticket-grid");
+  list.classList.remove("grid");
 
   if(QUESTIONS.length === 0){
     list.innerHTML = `<div class="empty-note">No questions loaded for this subject yet. Add them to <code>data/${SUBJECT.id}.json</code>.</div>`;
@@ -295,40 +313,61 @@ function renderExamList(){
     const { start, end, count } = examRange(i, QUESTIONS.length);
     const st = statusOf(i);
     const card = document.createElement("div");
-    card.className = "exam-card";
+    card.className = "ticket-card";
+
+    // seal + stub style per status — an icon, not the exam number
+    // (the number already appears once, in the card title below)
+    let sealClass = "", sealGlyph = "&#128221;", statusClass = ""; // 📝 not started
+    if(st.key === "done"){
+      sealClass = "emerald"; sealGlyph = "&#10003;"; statusClass = "pass"; // ✓
+    } else if(st.key === "progress"){
+      sealClass = "gold"; sealGlyph = "&#9686;"; statusClass = ""; // ◔
+    }
 
     let actionsHtml = "";
-
     if(st.key === "done"){
       actionsHtml = `
-        <div class="exam-actions">
-          <button class="btn btn-block" data-action="retake" data-exam="${i}">Retake Exam</button>
+        <div class="ticket-actions">
           <button class="btn btn-outline btn-merit" data-merit="${i}">Merit List</button>
+          <button class="btn" data-action="retake" data-exam="${i}">Retake Exam</button>
         </div>`;
     } else if(st.key === "progress"){
       const answered = st.p.answers.filter(a => a !== null).length;
       const allAnswered = answered === count;
       actionsHtml = `
-        <div class="exam-actions">
-          <button class="btn btn-block" data-action="resume" data-exam="${i}">${allAnswered ? "Finish Exam" : "Resume Exam"}</button>
+        <div class="ticket-actions">
           <button class="btn btn-outline btn-merit" data-merit="${i}">Merit List</button>
+          <button class="btn" data-action="resume" data-exam="${i}">${allAnswered ? "Finish Exam" : "Resume Exam"}</button>
         </div>`;
     } else {
       actionsHtml = `
-        <div class="exam-actions">
-          <button class="btn btn-block" data-action="start" data-exam="${i}">Start Exam</button>
-          <button class="btn btn-outline btn-merit" data-merit="${i}">Merit List</button>
+        <div class="ticket-actions">
+          <button class="btn" data-action="start" data-exam="${i}">Start Exam</button>
         </div>`;
     }
 
+    const answeredCount = st.p ? st.p.answers.filter(a => a !== null).length : 0;
+    const progressPct = st.key === "done" ? 100 : (count ? Math.round((answeredCount/count)*100) : 0);
+
     card.innerHTML = `
-      <div class="exam-card-head">
-        <span class="exam-num">EXAM ${i+1}</span>
-        <span class="pill ${st.key === 'done' ? 'pill-done' : st.key === 'progress' ? 'pill-progress' : 'pill-soon'}">${st.label}</span>
+      <div class="ticket-stub">
+        <div class="ticket-seal ${sealClass}">${sealGlyph}</div>
+        <div class="ticket-status ${statusClass}">${st.label}</div>
       </div>
-      <div class="exam-range">Questions ${start}&ndash;${end}</div>
-      <div class="exam-status-text"><span class="status-dot ${st.key}"></span>${count} questions</div>
-      ${actionsHtml}
+      <div class="ticket-body">
+        <div class="ticket-top">
+          <div>
+            <h3 class="ticket-title">Exam ${i+1}</h3>
+            <div class="ticket-sub">Questions ${start}&ndash;${end}</div>
+          </div>
+        </div>
+        <div class="ticket-meta">
+          <span class="ticket-chip">${count} Questions</span>
+          <span class="ticket-chip">${Math.round(examDurationSeconds(count)/60)} min</span>
+        </div>
+        <div class="ticket-progress"><span style="width:${progressPct}%"></span></div>
+        ${actionsHtml}
+      </div>
     `;
 
     card.querySelectorAll("button[data-action]").forEach(btn => {
@@ -336,17 +375,20 @@ function renderExamList(){
       const idx = parseInt(btn.dataset.exam, 10);
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        // Password-gate taking/resuming/retaking an exam. If the tab is
-        // already unlocked this session (e.g. via the subject card on the
-        // registry page), this runs immediately with no extra prompt.
-        requireAccess(() => {
+        const proceed = () => {
           // Then make sure we have a name to label this attempt with in
           // the personal exam log. Only asked once per device.
           requireProfile(() => {
             if(action === "retake") retakeExamFromList(idx);
             else startExam(idx); // start / resume just opens the exam at its saved state
           });
-        });
+        };
+        // Password-gate taking/resuming/retaking an exam — except the
+        // free preview subject, which never needs it. If the tab is
+        // already unlocked this session (e.g. via the subject card on the
+        // registry page), this runs immediately with no extra prompt.
+        if(isPreviewSubject()) proceed();
+        else requireAccess(proceed);
       });
     });
 
@@ -354,7 +396,8 @@ function renderExamList(){
       const idx = parseInt(btn.dataset.merit, 10);
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        requireAccess(() => { showMeritList(idx); });
+        if(isPreviewSubject()) showMeritList(idx);
+        else requireAccess(() => { showMeritList(idx); });
       });
     });
 
@@ -456,8 +499,8 @@ function startExam(examIndex){
     if(firstUnanswered !== -1) currentQ = firstUnanswered;
   }
 
-  document.getElementById("subjectHome").classList.add("hidden");
-  document.getElementById("examView").classList.add("active");
+  document.getElementById("subjectHome")?.classList.add("hidden");
+  document.getElementById("examView")?.classList.add("active");
   document.getElementById("resultsView").style.display = "none";
   document.getElementById("examTakingArea").style.display = "grid";
 
@@ -476,8 +519,8 @@ function startExam(examIndex){
 
 function exitToSubjectHome(){
   stopExamTimer();
-  document.getElementById("subjectHome").classList.remove("hidden");
-  document.getElementById("examView").classList.remove("active");
+  document.getElementById("subjectHome")?.classList.remove("hidden");
+  document.getElementById("examView")?.classList.remove("active");
   history.replaceState(null, "", location.pathname);
   renderSubjectHeader();
   renderExamList();

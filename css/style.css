@@ -748,3 +748,146 @@ footer.site-foot{
   border-color:var(--maroon);
   background:var(--maroon-tint);
 }
+
+/* ============================================================
+   "ADMIT CARD" EXAM CARD — replaces .exam-card / .grid
+   Concept: each exam looks like a tear-off admit-card / ticket
+   stub, matching the OMR/notebook identity already on the site.
+   ============================================================ */
+
+.ticket-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+  gap:18px;
+}
+
+.ticket-card{
+  position:relative;
+  display:flex;
+  align-items:stretch;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius-l);
+  box-shadow:var(--shadow-card);
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.ticket-card:hover{
+  transform:translateY(-3px);
+  border-color:var(--emerald);
+  box-shadow:0 6px 14px rgba(22,38,28,.10), 0 20px 34px -16px rgba(28,138,82,.32);
+}
+.ticket-card:hover .ticket-stub{ background:var(--emerald-tint); }
+.ticket-card:active{ transform:translateY(-1px); }
+
+/* ---- left stub: exam number + seal, like a ticket counterfoil ---- */
+.ticket-stub{
+  position:relative;
+  flex:0 0 96px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px;
+  padding:18px 8px;
+  background:var(--paper);
+  border-right:2px dashed var(--line);
+  transition:background .16s ease;
+}
+.ticket-stub-no{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.5px;
+  color:var(--muted); text-transform:uppercase;
+}
+.ticket-seal{
+  width:44px; height:44px; border-radius:50%;
+  border:1.5px dashed var(--gold);
+  background:var(--gold-tint); color:var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-size:16px;
+}
+.ticket-seal.emerald{ border-color:var(--emerald); background:var(--emerald-tint); color:var(--emerald-text); }
+.ticket-seal.maroon{ border-color:var(--maroon); background:var(--maroon-tint); color:var(--maroon); }
+
+/* perforation notches top/bottom of the dashed divider, like a real
+   ticket punched out of a sheet */
+.ticket-stub::before,
+.ticket-stub::after{
+  content:""; position:absolute; right:-8px;
+  width:16px; height:16px; border-radius:50%;
+  background:var(--paper);
+  border:1px solid var(--line);
+}
+.ticket-stub::before{ top:-8px; }
+.ticket-stub::after{ bottom:-8px; }
+
+/* ---- right body: title, meta, progress, actions ---- */
+.ticket-body{
+  flex:1 1 auto; min-width:0;
+  padding:16px 20px 16px 22px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.ticket-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.ticket-title{ font-family:var(--font-display); font-size:18px; line-height:1.25; margin:0; color:var(--ink); }
+.ticket-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+.ticket-meta{ display:flex; flex-wrap:wrap; gap:8px; }
+.ticket-chip{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11.5px; color:var(--ink-soft);
+  background:var(--line-soft); border-radius:999px;
+  padding:4px 10px 4px 9px;
+}
+.ticket-chip svg{ width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:2; }
+
+.ticket-progress{ height:6px; border-radius:4px; background:var(--line-soft); overflow:hidden; margin-top:2px; }
+.ticket-progress > span{ display:block; height:100%; background:var(--emerald); }
+
+.ticket-actions{ display:flex; gap:8px; margin-top:6px; }
+.ticket-actions .btn{ flex:1; padding:8px 14px; font-size:13px; }
+
+/* status label on the stub side */
+.ticket-status{
+  font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--muted); text-align:center;
+}
+.ticket-status.pass{ color:var(--emerald-text); }
+.ticket-status.fail{ color:var(--maroon); }
+
+@media (max-width:480px){
+  .ticket-stub{ flex-basis:72px; }
+  .ticket-seal{ width:36px; height:36px; font-size:14px; }
+}
+
+
+.ticket-seal{
+  font-size:13px; /* was 16px — smaller so "100%" style text still fits */
+}
+
+/* dark theme: perforation dots should match surface, not paper,
+   since paper is near-black there and would look like a hole */
+html[data-theme="dark"] .ticket-stub::before,
+html[data-theme="dark"] .ticket-stub::after{ background:var(--surface); }
+
+/* ============================================================
+   SUBJECT CARD variant — "stacked tickets" effect, signals
+   this card is a folder containing MULTIPLE exam tickets inside.
+   Two offset ticket-edges peek out from behind the top card.
+   Applied via an extra class alongside .ticket-card.
+   ============================================================ */
+.ticket-card.subject-ticket{
+  position:relative;
+  margin-bottom:14px; /* room for the stacked edges below the card */
+}
+.ticket-card.subject-ticket::before,
+.ticket-card.subject-ticket::after{
+  content:"";
+  position:absolute;
+  left:8px; right:8px;
+  height:100%;
+  border:1px solid var(--line);
+  border-radius:var(--radius-l);
+  background:var(--surface);
+  z-index:-1;
+}
+.ticket-card.subject-ticket::before{ top:6px; opacity:.85; }
+.ticket-card.subject-ticket::after{ top:12px; left:16px; right:16px; opacity:.6; }
+.ticket-card.subject-ticket:hover::before{ border-color:var(--emerald-tint); }

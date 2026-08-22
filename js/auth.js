@@ -69,6 +69,9 @@ function showAccessModal(onSuccess){
         <button class="btn btn-outline" id="pwCancel" type="button">Cancel</button>
         <button class="btn btn-gold" id="pwSubmit" type="button">Unlock</button>
       </div>
+      <a class="pw-preview-link" id="pwPreviewLink" href="#" style="display:block;text-align:center;margin-top:14px;font-size:.9rem;">
+        Try It First — No Password Needed 
+      </a>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -125,6 +128,14 @@ function showAccessModal(onSuccess){
     if(e.key === "Enter") trySubmit();
     if(e.key === "Escape") closeModal();
   }
+
+  // Works from the root (index.html, subject-list.html) or from inside
+  // /subjects/ — same folder-detection pattern used by layout.js.
+  const inSubjectsFolder = /\/subjects\//.test(location.pathname);
+  const previewHref = inSubjectsFolder ? "preview-demo.html" : "subjects/preview-demo.html";
+  const previewLink = document.getElementById("pwPreviewLink");
+  previewLink.href = previewHref;
+  previewLink.addEventListener("click", () => { closeModal(); });
 
   document.getElementById("pwSubmit").addEventListener("click", trySubmit);
   document.getElementById("pwCancel").addEventListener("click", closeModal);

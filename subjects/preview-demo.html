@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Free Preview — JobExam</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("jobexam:theme");
+          if (t !== "light" && t !== "dark") {
+            t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark" : "light";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <div class="wrap">
+      <p class="crumbs">
+        <a href="../index.html">Home</a> &nbsp;/&nbsp; <span>Free Preview</span>
+      </p>
+
+      <div id="subjectHome">
+        <div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+          <div>
+            <p class="page-eyebrow">No Password Needed</p>
+            <h1 class="page-title" id="subjectTitle">Free Preview</h1>
+            <p class="page-desc">
+              A real 30-question exam pulled from several subjects — timed,
+              scored, with instant explanations — so you can try JobExam before
+              unlocking the full subject list.
+            </p>
+          </div>
+          <a class="btn btn-outline" href="../subject-list.html" style="flex-shrink:0; white-space:nowrap;">← Back to Exam Center</a>
+        </div>
+
+        <div class="merit-stats" style="margin-bottom:24px;">
+          <div class="merit-stat"><div class="l">Questions</div><div class="n" id="statTotalQ">—</div></div>
+          <div class="merit-stat"><div class="l">Exams</div><div class="n" id="statTotalExams">—</div></div>
+          <div class="merit-stat"><div class="l">Completed</div><div class="n" id="statCompleted">—</div></div>
+        </div>
+
+        <div class="grid" id="examList"></div>
+      </div>
+
+      <div id="site-examview"></div>
+
+      <div id="site-footer"></div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/subject-list.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/theme.js"></script>
+    <script>initSubjectPage("preview-demo");</script>
+  </body>
+</html>

@@ -49,17 +49,29 @@
     <a class="btn btn-gold" href="subject-list.html">View Subjects →</a>
   </div>
 
+  <!-- ============ YOUR MERIT LIST — personal, cross-subject practice log ============
+       Pulled entirely from this browser's own localStorage history. There's no
+       server and no shared leaderboard, so this can only ever rank this
+       device's own attempts against each other. -->
+  <!-- <div class="about-section" id="merit">
+    <h2 class="section-title">Your Merit List</h2>
+    <p class="page-desc" style="margin-bottom:18px;">Your best results across every subject, saved on this device only. Finish any exam to add it here.</p>
+    <div id="homeMeritList">
+      <div class="empty-note">Loading your results…</div>
+    </div>
+  </div> -->
+
   <!-- ============ ABOUT / MY WORK ============ -->
   <div class="about-section" id="about">
     <h2 class="section-title">About this work</h2>
     <div class="about-grid">
       <div class="about-bio">
         <p>JobExam started as a way to practice for government and bank job exams without needing a data connection — every question bank, your progress, and your scores are stored locally on your own device.</p>
-        <p>The whole app is hand-built with plain HTML, CSS, and JavaScript — no framework, no build step — so it stays lightweight and works the same offline as it does online. Each subject ships as its own question bank, and new subjects can be added without touching the exam engine itself.</p>
+        <p>Each subject ships as its own question bank, so new subjects can be added anytime without disrupting the exams you've already started. Everything works the same whether you're online or completely offline.</p>
       </div>
       <ul class="skill-list">
-        <li><b>Front-end:</b> HTML, CSS, vanilla JavaScript</li>
-        <li><b>Design:</b> Custom, framework-free UI systems</li>
+        <li><b>Feature:</b> 50-question timed exams with instant scoring &amp; negative marking</li>
+        <li><b>Feature:</b> Personal merit list &amp; exam history, saved per device</li>
         <li><b>Offline-first:</b> localStorage-backed progress tracking</li>
         <li><b>Focus:</b> Exam-prep &amp; educational tools</li>
       </ul>
@@ -69,6 +81,8 @@
   <div id="site-footer"></div>
 </div>
 
+<script src="js/common.js"></script>
+<script src="js/home-merit.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/theme.js"></script>
 </body>

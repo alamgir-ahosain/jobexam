@@ -28,9 +28,13 @@ function examDurationSeconds(questionCount){
   return Math.floor(questionCount * SECONDS_PER_QUESTION);
 }
 
+// The one subject that never requires the access password — see
+// auth.js's "Try It First" button and subject-list.js's PREVIEW check.
+const PREVIEW_SUBJECT_ID = "preview-demo";
+
 const SUBJECTS = [
-  { id: "combind",               name: "Combind",                      page: "subjects/combind.html",               live: true,  questionCount: 100 },
-  { id: "oop",                   name: "Object-Oriented Programming",  page: "subjects/oop.html",                   live: true,  questionCount: 211 },
+  { id: "mixed-topic",               name: "Mixed Topic",                      page: "subjects/mixed-topic.html",               live: true,  questionCount: 390 },
+  { id: "oop",                   name: "Object Oriented Programming",  page: "subjects/oop.html",                   live: true,  questionCount: 211 },
   { id: "networking",            name: "Networking",                   page: "subjects/networking.html",            live: true,  questionCount: 480 },
   { id: "database",              name: "Database",                     page: "subjects/database.html",              live: true,  questionCount: 399 },
   { id: "c",                     name: "C Programming",                page: "subjects/c.html",                     live: true,  questionCount: 431 },
@@ -41,11 +45,10 @@ const SUBJECTS = [
   { id: "software-eng",          name: "Software Engineering",         page: "subjects/software-eng.html",          live: true,  questionCount: 376 },
   { id: "cloud-virtualization",  name: "Cloud & Virtualization",       page: "subjects/cloud-virtualization.html",  live: true,  questionCount: 200 },
   { id: "cybersecurity",         name: "Cyber Security",               page: "subjects/cybersecurity.html",         live: true,  questionCount: 211 },
-
-  // Cryptography — fully wired up to data/cryptography.json
   { id: "cryptography",          name: "Cryptography",                 page: "subjects/cryptography.html",          live: true,  questionCount: 100 },
-
   { id: "blockchain-dark-web",   name: "Blockchain & Dark Web",        page: "subjects/blockchain-dark-web.html",   live: true,  questionCount: 50 },
+
+  { id: "preview-demo", name: "Free Preview (Mixed Topics)", page: "subjects/preview-demo.html", live: true, questionCount: 30, hidden: true },
 
   { id: "bangla",       name: "Bangla",             page: "subjects/bangla.html",  live: false, questionCount: 0 },
   { id: "english",      name: "English",            page: "subjects/english.html", live: false, questionCount: 0 },
@@ -135,10 +138,13 @@ function subjectStatsFromCount(subject){
 function renderHome(){
   const grid = document.getElementById("subjectGrid");
   if(!grid) return;
+  grid.classList.add("ticket-grid");
+  grid.classList.remove("grid");
 
   SUBJECTS.forEach(subject => {
+    if(subject.hidden) return; // e.g. the free preview subject — linked directly, not listed here
     const card = document.createElement(subject.live ? "a" : "div");
-    card.className = "subject-card" + (subject.live ? "" : " card-disabled");
+    card.className = "ticket-card subject-ticket" + (subject.live ? "" : " card-disabled");
     if(subject.live){
       card.href = subject.page;
       // Password-gate entry into any subject. requireAccess() shows the
@@ -152,27 +158,43 @@ function renderHome(){
     if(subject.live){
       const stats = subjectStatsFromCount(subject);
       const pct = stats.exams ? Math.round(((stats.completed) / stats.exams) * 100) : 0;
+      const sealClass = stats.completed === stats.exams && stats.exams > 0 ? "emerald" : (stats.inProgress ? "gold" : "");
       card.innerHTML = `
-        <div class="subject-card-top">
-          <h3 class="subject-name">${subject.name}</h3>
+        <div class="ticket-stub">
+          <div class="ticket-seal ${sealClass}">${stats.exams ? Math.round(pct) + "%" : "—"}</div>
+          <div class="ticket-status ${sealClass === 'emerald' ? 'pass' : ''}">${stats.completed}/${stats.exams} done</div>
         </div>
-        <div class="subject-stats">
-          <span><b>${stats.total}</b> Questions</span>
-          <span><b>${stats.exams}</b> Exams</span>
+        <div class="ticket-body">
+          <div class="ticket-top">
+            <div>
+              <h3 class="ticket-title">${subject.name}</h3>
+            </div>
+          </div>
+          <div class="ticket-meta">
+            <span class="ticket-chip">${stats.total} Questions</span>
+            <span class="ticket-chip">${stats.exams} Exams</span>
+            ${stats.inProgress ? `<span class="ticket-chip">${stats.inProgress} in progress</span>` : ``}
+          </div>
+          <div class="ticket-progress"><span style="width:${pct}%"></span></div>
+          <div class="ticket-actions">
+            <span class="btn" style="flex:1; text-align:center;">Open Subject</span>
+          </div>
         </div>
-        <div class="subject-progress-mini"><span style="width:${pct}%"></span></div>
-        <div class="subject-stats">
-          ${stats.completed ? `<span class="pill pill-done">${stats.completed}/${stats.exams} done</span>` : `<span class="pill pill-new">Start now</span>`}
-          ${stats.inProgress ? `<span class="pill pill-progress">${stats.inProgress} in progress</span>` : ``}
-        </div>
-        <span class="btn btn-block">Open Subject</span>
       `;
     } else {
       card.innerHTML = `
-        <div class="subject-card-top">
-          <h3 class="subject-name">${subject.name}</h3>
+        <div class="ticket-stub">
+          <div class="ticket-seal">…</div>
+          <div class="ticket-status">Soon</div>
         </div>
-        <div class="subject-stats"><span>Upcoming...</span></div>
+        <div class="ticket-body">
+          <div class="ticket-top">
+            <div>
+              <h3 class="ticket-title">${subject.name}</h3>
+              <div class="ticket-sub">Upcoming...</div>
+            </div>
+          </div>
+        </div>
       `;
     }
     grid.appendChild(card);
