@@ -1,8 +1,9 @@
 /* ============================================================
-   JobExam — exam.js
+   JobExam — subject-list.js
    Generic exam engine. Every subject page calls:
-     initSubjectPage("oop");
-   after its data/<subject>.js file has been loaded.
+     initSubjectPage("cryptography");
+   after auth.js and common.js have loaded. Questions are fetched
+   as JSON, lazily, only after the access password is verified.
    ============================================================ */
 
 let SUBJECT = null;
@@ -58,7 +59,7 @@ function showProfileModal(onSuccess){
       <p class="profile-desc">Enter a name to label your results in <b>your own</b> exam history on this device. There's no account or login \u2014 nothing is verified or shared anywhere else.</p>
       <div class="profile-field">
         <label for="profileName">Name</label>
-        <input type="text" class="profile-input" id="profileName" placeholder="e.g. Jamal Uddin" autocomplete="off" />
+        <input type="text" class="profile-input" id="profileName" placeholder="e.g. Alamgir Hosain" autocomplete="off" />
       </div>
       <div class="profile-error" id="profileError">Please enter a name (2+ characters).</div>
       <div class="profile-actions">
@@ -220,33 +221,58 @@ function showMeritList(examIndex){
   document.addEventListener("keydown", onKeydown);
 }
 
-function initSubjectPage(subjectId){
+/* ---------------- Init: gate on password, THEN fetch questions ---------------- */
+
+async function initSubjectPage(subjectId){
   SUBJECT = getSubject(subjectId);
   if(!SUBJECT){ console.error("Unknown subject:", subjectId); return; }
-  QUESTIONS = getQuestions(SUBJECT);
-  EXAMS = examCountFor(SUBJECT);
 
   document.getElementById("subjectTitle").textContent = SUBJECT.name;
   document.title = SUBJECT.name + " — JobExam";
 
-  renderSubjectHeader();
-  renderExamList();
+  // Nothing is fetched yet — show a locked placeholder immediately.
+  document.getElementById("statTotalQ").textContent = "—";
+  document.getElementById("statTotalExams").textContent = "—";
+  document.getElementById("statCompleted").textContent = "—";
+  document.getElementById("examList").innerHTML =
+    `<div class="empty-note">Enter the access password to view this subject's exams.</div>`;
 
-  // Deep-link support: oop.html#exam=3
-  const m = location.hash.match(/exam=(\d+)/);
-  if(m){
-    const idx = parseInt(m[1],10) - 1;
-    if(idx >= 0 && idx < EXAMS) startExam(idx);
-  }
+  requireAccess(async () => {
+    try{
+      QUESTIONS = await getQuestionsAsync(SUBJECT);
+    }catch(err){
+      document.getElementById("examList").innerHTML =
+        `<div class="empty-note">Failed to load questions. Please refresh and try again.</div>`;
+      console.error(err);
+      return;
+    }
+    EXAMS = examCountFromTotal(QUESTIONS.length);
+
+    renderSubjectHeader();
+    renderExamList();
+
+    // Deep-link support: cryptography.html#exam=3
+    const m = location.hash.match(/exam=(\d+)/);
+    if(m){
+      const idx = parseInt(m[1],10) - 1;
+      if(idx >= 0 && idx < EXAMS) startExam(idx);
+    }
+  });
 }
 
 /* ---------------- Subject overview ---------------- */
 
 function renderSubjectHeader(){
-  const stats = subjectStats(SUBJECT);
-  document.getElementById("statTotalQ").textContent = stats.total;
-  document.getElementById("statTotalExams").textContent = stats.exams;
-  document.getElementById("statCompleted").textContent = `${stats.completed}/${stats.exams}`;
+  const total = QUESTIONS.length;
+  const exams = EXAMS;
+  let completed = 0;
+  for(let i=0;i<exams;i++){
+    const p = loadProgress(SUBJECT.id, i);
+    if(p && p.status === "completed") completed++;
+  }
+  document.getElementById("statTotalQ").textContent = total;
+  document.getElementById("statTotalExams").textContent = exams;
+  document.getElementById("statCompleted").textContent = `${completed}/${exams}`;
 }
 
 function statusOf(examIndex){
@@ -261,7 +287,7 @@ function renderExamList(){
   list.innerHTML = "";
 
   if(QUESTIONS.length === 0){
-    list.innerHTML = `<div class="empty-note">No questions loaded for this subject yet. Add them to <code>data/${SUBJECT.dataVar.toLowerCase()}.js</code>.</div>`;
+    list.innerHTML = `<div class="empty-note">No questions loaded for this subject yet. Add them to <code>data/${SUBJECT.id}.json</code>.</div>`;
     return;
   }
 

@@ -5,21 +5,19 @@
 
    HOW TO ADD A NEW SUBJECT LATER
    --------------------------------------------------------------
-   1. Create data/<id>.js defining a global array with `var` (not
-      const/let — those don't attach to window in a plain script tag
-      and the app won't be able to see them), e.g.:
-        var NETWORKING_QUESTIONS = [ {question, options, answer, explanation}, ... ];
-   2. Create subjects/<id>.html by duplicating subjects/oop.html and
-      changing the three lines marked "SUBJECT SETTINGS" near the top
-      of its <script> block. Because it lives one level down, its
-      asset paths must be prefixed with "../" (css, js, data).
-   3. Add one entry to the SUBJECTS array below, with live: true, and
-      page: "subjects/<id>.html".
-   4. Add <script src="data/<id>.js"></script> to exams.html (before
-      common.js) so the subject-registry page can count its
-      questions/exams.
-   That's it — the home page, progress tracking, and exam engine
-   all read from this registry automatically.
+   1. Convert its question bank into data/<id>.json — a plain JSON
+      array of {question, options, answer, explanation} objects
+      (no "var X = " wrapper, no trailing semicolon).
+   2. Create subjects/<id>.html by duplicating subjects/cryptography.html
+      and changing the subject-specific text + the initSubjectPage("<id>")
+      call at the bottom.
+   3. Add one entry to the SUBJECTS array below, with live: true,
+      the correct page path, and questionCount set to the number of
+      questions in that subject's JSON file (used for registry-page
+      stats WITHOUT downloading the question bank first).
+   That's it — the registry page, progress tracking, and exam engine
+   all read from this registry automatically. Nothing is fetched
+   over the network until the person enters the correct password.
    ============================================================ */
 
 const EXAM_SIZE = 50; // fixed questions per exam, per spec
@@ -31,39 +29,55 @@ function examDurationSeconds(questionCount){
 }
 
 const SUBJECTS = [
-{ id: "combind",      name: "Combind",                      dataVar: "COMBIND_QUESTIONS",       page: "subjects/combind.html",      live: true },
-  { id: "oop",          name: "Object-Oriented Programming", dataVar: "OOP_QUESTIONS", page: "subjects/oop.html",          live: true  },
-  { id: "networking",   name: "Networking",                  dataVar: "NETWORKING_QUESTIONS",   page: "subjects/networking.html",   live: true  },
-  { id: "database",     name: "Database",                    dataVar: "DATABASE_QUESTIONS",     page: "subjects/database.html",     live: true  },
-  { id: "c",            name: "C Programming",                dataVar: "C_QUESTIONS",            page: "subjects/c.html",            live: true  },
-  { id: "fundamentals", name: "Computer Fundamentals",         dataVar: "FUNDAMENTALS_QUESTIONS", page: "subjects/fundamentals.html", live: true  },
-  { id: "dsa",          name: "Data Structure & Algorithm",  dataVar: "DSA_QUESTIONS",           page: "subjects/dsa.html",          live: true  },
-  { id: "os",           name: "Operating System",             dataVar: "OS_QUESTIONS",            page: "subjects/os.html",           live: true  },
-  { id: "computer-architecture", name: "Computer Architecture", dataVar: "COMPUTER_ARCHITECTURE_QUESTIONS", page: "subjects/computer-architecture.html", live: true },
-  { id: "software-eng", name: "Software Engineering",         dataVar: "SOFTWARE_ENG_QUESTIONS",  page: "subjects/software-eng.html", live: true  },
-{ id: "cloud-virtualization",          name: "Cloud & Virtualization",                          dataVar: "CLOUD_VIRTUALIZATION_QUESTIONS",           page: "subjects/cloud-virtualization.html",          live: true },
-  { id: "cybersecurity", name: "Cyber Security",               dataVar: "CYBERSECURITY_QUESTIONS", page: "subjects/cybersecurity.html", live: true  },
-  { id: "cryptography",  name: "Cryptography",                 dataVar: "CRYPTOGRAPHY_QUESTIONS",  page: "subjects/cryptography.html",  live: true  },
-  { id: "blockchain-dark-web", name: "Blockchain & Dark Web", dataVar: "BLOCKCHAIN_DARK_WEB_QUESTIONS", page: "subjects/blockchain-dark-web.html", live: true },
+  { id: "combind",               name: "Combind",                      page: "subjects/combind.html",               live: true,  questionCount: 100 },
+  { id: "oop",                   name: "Object-Oriented Programming",  page: "subjects/oop.html",                   live: true,  questionCount: 211 },
+  { id: "networking",            name: "Networking",                   page: "subjects/networking.html",            live: true,  questionCount: 480 },
+  { id: "database",              name: "Database",                     page: "subjects/database.html",              live: true,  questionCount: 399 },
+  { id: "c",                     name: "C Programming",                page: "subjects/c.html",                     live: true,  questionCount: 431 },
+  { id: "fundamentals",          name: "Computer Fundamentals",        page: "subjects/fundamentals.html",          live: true,  questionCount: 112 },
+  { id: "dsa",                   name: "Data Structure & Algorithm",   page: "subjects/dsa.html",                   live: true,  questionCount: 574 },
+  { id: "os",                    name: "Operating System",             page: "subjects/os.html",                    live: true,  questionCount: 389 },
+  { id: "computer-architecture", name: "Computer Architecture",        page: "subjects/computer-architecture.html", live: true,  questionCount: 150 },
+  { id: "software-eng",          name: "Software Engineering",         page: "subjects/software-eng.html",          live: true,  questionCount: 376 },
+  { id: "cloud-virtualization",  name: "Cloud & Virtualization",       page: "subjects/cloud-virtualization.html",  live: true,  questionCount: 200 },
+  { id: "cybersecurity",         name: "Cyber Security",               page: "subjects/cybersecurity.html",         live: true,  questionCount: 211 },
 
+  // Cryptography — fully wired up to data/cryptography.json
+  { id: "cryptography",          name: "Cryptography",                 page: "subjects/cryptography.html",          live: true,  questionCount: 100 },
 
-  { id: "bangla",       name: "Bangla",                       dataVar: "BANGLA_QUESTIONS",        page: "subjects/bangla.html",       live: false },
-{ id: "english",      name: "English",                      dataVar: "ENGLISH_QUESTIONS",       page: "subjects/english.html",      live: false },
-  { id: "math",         name: "Mathematics",                  dataVar: "MATH_QUESTIONS",          page: "subjects/math.html",         live: false },
-  { id: "gk",           name: "General Knowledge",            dataVar: "GK_QUESTIONS",             page: "subjects/gk.html",           live: false },
+  { id: "blockchain-dark-web",   name: "Blockchain & Dark Web",        page: "subjects/blockchain-dark-web.html",   live: true,  questionCount: 50 },
+
+  { id: "bangla",       name: "Bangla",             page: "subjects/bangla.html",  live: false, questionCount: 0 },
+  { id: "english",      name: "English",            page: "subjects/english.html", live: false, questionCount: 0 },
+  { id: "math",         name: "Mathematics",        page: "subjects/math.html",    live: false, questionCount: 0 },
+  { id: "gk",           name: "General Knowledge",  page: "subjects/gk.html",      live: false, questionCount: 0 },
 ];
-
 
 function getSubject(id){
   return SUBJECTS.find(s => s.id === id) || null;
 }
 
-function getQuestions(subject){
-  return (typeof window !== "undefined" && window[subject.dataVar]) ? window[subject.dataVar] : [];
+// Path prefix helper — works whether we're at the project root or
+// one level down inside /subjects/.
+function dataPathPrefix(){
+  return /\/subjects\//.test(location.pathname) ? "../" : "";
 }
 
-function examCountFor(subject){
-  const total = getQuestions(subject).length;
+// In-memory cache so we only fetch each subject's JSON once per page load.
+const questionCache = {};
+
+/* Lazy fetch — only ever called AFTER requireAccess() succeeds.
+   Nothing downloads the question bank until the password is verified. */
+async function getQuestionsAsync(subject){
+  if(questionCache[subject.id]) return questionCache[subject.id];
+  const res = await fetch(`${dataPathPrefix()}data/${subject.id}.json`);
+  if(!res.ok) throw new Error(`Failed to load questions for ${subject.id}`);
+  const data = await res.json();
+  questionCache[subject.id] = data;
+  return data;
+}
+
+function examCountFromTotal(total){
   return total ? Math.ceil(total / EXAM_SIZE) : 0;
 }
 
@@ -102,9 +116,11 @@ function emptyProgress(qCount){
   };
 }
 
-function subjectStats(subject){
-  const total = getQuestions(subject).length;
-  const exams = examCountFor(subject);
+// Registry-page stats come entirely from the hardcoded questionCount —
+// no fetch needed just to render the subject list.
+function subjectStatsFromCount(subject){
+  const total = subject.questionCount || 0;
+  const exams = examCountFromTotal(total);
   let completed = 0, inProgress = 0;
   for(let i=0;i<exams;i++){
     const p = loadProgress(subject.id, i);
@@ -114,7 +130,7 @@ function subjectStats(subject){
   return { total, exams, completed, inProgress };
 }
 
-/* ---------------- Subject registry page (exams.html) ---------------- */
+/* ---------------- Subject registry page (subject-list.html) ---------------- */
 
 function renderHome(){
   const grid = document.getElementById("subjectGrid");
@@ -134,7 +150,7 @@ function renderHome(){
     }
 
     if(subject.live){
-      const stats = subjectStats(subject);
+      const stats = subjectStatsFromCount(subject);
       const pct = stats.exams ? Math.round(((stats.completed) / stats.exams) * 100) : 0;
       card.innerHTML = `
         <div class="subject-card-top">

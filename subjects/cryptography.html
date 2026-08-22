@@ -42,15 +42,18 @@
     <div class="grid" id="examList"></div>
   </div>
 
-
-      <div id="site-examview"></div>
+  <div id="site-examview"></div>
 
   <div id="site-footer"></div>
 </div>
 
-<script src="../js/common.js"></script>
+<!-- NOTE: no data/*.js is loaded eagerly here. Questions are fetched
+     from ../data/cryptography.json only AFTER the access password
+     succeeds — see js/auth.js + js/subject-list.js. auth.js must load
+     before common.js since common.js's registry click-handler calls
+     requireAccess(). -->
 <script src="../js/auth.js"></script>
-<script src="../data/cryptography.js"></script>
+<script src="../js/common.js"></script>
 <script src="../js/subject-list.js"></script>
 <script src="../js/layout.js"></script>
 <script src="../js/theme.js"></script>

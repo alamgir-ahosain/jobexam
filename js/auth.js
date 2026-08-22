@@ -1,20 +1,31 @@
 /* ============================================================
    JobExam — auth.js
-   Lightweight access-password gate for entering a subject or
-   starting/resuming/retaking an exam.
-
-   NOTE: this is a shared-access checkpoint, not real security —
-   the password list lives in this client-side file on purpose,
-   so anyone reading the source can see it. It just keeps casual
-   visitors out of the exam content, not a determined one.
+   Password gate using SHA-256 hashes instead of plaintext.
+   NOTE: still not real security on a static site — a determined
+   person can watch the successful compare in DevTools, or
+   brute-force short passwords offline. This just stops the
+   passwords from being readable at a glance in the source.
 
    Once the correct password is entered, access stays unlocked
    for the rest of the browser tab's session (sessionStorage), so
    the prompt only needs to be solved once per visit.
    ============================================================ */
 
-const ACCESS_PASSWORDS = ["amarnamalamgir", "tuikedare", "amiektakhrapmanush"];
+const ACCESS_PASSWORD_HASHES = [
+  "3b87ffec7cf14973479cace8379bb90003c0ee6a8a2b75e8938e41e8235c09ef",
+  "66a1ac7e24768f8f5d39485197711ad9689be18b2bb62853668e3943c1eba298",
+  "e65b2c1d0f24db25005749c2d10e7fdef94f9ffdb3c2db0688f2506406863eb8",
+];
+
 const ACCESS_KEY = "jobexam:unlocked";
+
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 function isUnlocked(){
   try{ return sessionStorage.getItem(ACCESS_KEY) === "1"; }
@@ -86,9 +97,17 @@ function showAccessModal(onSuccess){
     overlay.remove();
   }
 
-  function trySubmit(){
+  async function trySubmit(){
     const val = input.value.trim();
-    if(val && ACCESS_PASSWORDS.includes(val)){
+    if(!val) return;
+
+    const submitBtn = document.getElementById("pwSubmit");
+    submitBtn.disabled = true;
+
+    const hash = await sha256Hex(val);
+    submitBtn.disabled = false;
+
+    if(ACCESS_PASSWORD_HASHES.includes(hash)){
       setUnlocked();
       closeModal();
       onSuccess();

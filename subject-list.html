@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subject Registry — JobExam</title>
     <script>
-      /* Apply saved/preferred theme before first paint to avoid a flash. */
       (function () {
         try {
           var t = localStorage.getItem("jobexam:theme");
           if (t !== "light" && t !== "dark") {
-            t =
-              window.matchMedia &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
+            t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark" : "light";
           }
           document.documentElement.setAttribute("data-theme", t);
         } catch (e) {}
@@ -45,23 +41,9 @@
       <div id="site-footer"></div>
     </div>
 
-    <!-- Data files for every LIVE subject must load before common.js renders
-     the cards, so it can count questions/exams for each one. When you
-     wire up a new subject, add its data/<id>.js here too. -->
-    <script src="data/oop.js"></script>
-    <script src="data/dsa.js"></script>
-    <script src="data/cybersecurity.js"></script>
-    <script src="data/cryptography.js"></script>
-    <script src="data/c.js"></script>
-    <script src="data/networking.js"></script>
-    <script src="data/database.js"></script>
-    <script src="data/fundamentals.js"></script>
-    <script src="data/software-eng.js"></script>
-    <script src="data/os.js"></script>
-    <script src="data/computer-architecture.js"></script>
-    <script src="data/blockchain-dark-web.js"></script>
-    <script src="data/cloud-virtualization.js"></script>
-    <script src="data/combind.js"></script>
+    <!-- NO MORE data/<subject>.js script tags here at all.
+         Counts come from SUBJECTS[].questionCount in common.js;
+         actual questions are fetched per-subject after unlock. -->
     <script src="js/auth.js"></script>
     <script src="js/common.js"></script>
     <script src="js/layout.js"></script>
