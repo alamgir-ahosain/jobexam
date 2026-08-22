@@ -33,7 +33,7 @@ function examDurationSeconds(questionCount){
 const PREVIEW_SUBJECT_ID = "preview-demo";
 
 const SUBJECTS = [
-  { id: "mixed-topic",               name: "Mixed Topic",                      page: "subjects/mixed-topic.html",               live: true,  questionCount: 390 },
+  { id: "mixed-topic",               name: "Mixed Topic",                      page: "subjects/mixed-topic.html",               live: true,  questionCount: 1050 },
   { id: "oop",                   name: "Object Oriented Programming",  page: "subjects/oop.html",                   live: true,  questionCount: 211 },
   { id: "networking",            name: "Networking",                   page: "subjects/networking.html",            live: true,  questionCount: 480 },
   { id: "database",              name: "Database",                     page: "subjects/database.html",              live: true,  questionCount: 399 },
