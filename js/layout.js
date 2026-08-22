@@ -31,7 +31,8 @@
       '<div class="topbar">' +
         '<div class="topbar-inner">' +
           '<a class="brand" href="' + base + 'index.html">' +
-            '<span class="brand-mark">JE</span>' +
+            // '<span class="brand-mark">JE</span>' +
+            '<img src="' + base + 'images/logo.png" alt="JobExam" class="brand-mark" style="width:36px;height:36px;object-fit:contain;" />' +
             '<span class="brand-text">' +
               '<div class="brand-title">JobExam</div>' +
               '<div class="brand-sub">Govt \u00B7 Bank \u00B7 IT Exam Practice</div>' +
@@ -133,6 +134,12 @@
     if(h) h.outerHTML = headerHTML();
     if(f) f.outerHTML = footerHTML();
     if(e) e.outerHTML = examViewHTML();
+
+var favicon = document.createElement('link');
+favicon.rel = 'icon';
+favicon.type = 'image/png';
+favicon.href = base + 'images/logo.png';
+document.head.appendChild(favicon);
   }
 
   if(document.readyState === "loading"){
