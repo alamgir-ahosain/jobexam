@@ -1,15 +1,18 @@
 /* ============================================================
    JobExam — layout.js
-   Single source of truth for the topbar (header) and site
-   footer. Every page just drops in two empty placeholders:
+   Single source of truth for the topbar (header), site footer,
+   and the exam-taking view markup. Every page just drops in
+   three empty placeholders:
 
      <div id="site-header"></div>
+     ...
+     <div id="site-examview"></div>   (subject pages only)
      ...
      <div id="site-footer"></div>
 
    ...and loads this script. No more copy-pasting the same
-   header/footer markup into every HTML file — change it once
-   here and every page picks it up.
+   header/footer/exam-view markup into every HTML file — change
+   it once here and every page picks it up.
 
    Works from both the project root (index.html, exams.html) and
    one level down (subjects/*.html) by detecting the current
@@ -45,6 +48,65 @@
     );
   }
 
+  function examViewHTML(){
+    return (
+      '<div id="examView">' +
+        '<div class="exam-top-bar">' +
+          '<div>' +
+            '<div class="exam-top-title" id="examTitleLabel">Exam</div>' +
+            '<div class="sub" id="examSubLabel"></div>' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:14px;">' +
+            '<div class="exam-timer" id="examTimer">0:00</div>' +
+            '<button class="btn btn-outline" onclick="exitToSubjectHome()">\u2190 Back to Exams</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<div id="examTakingArea" class="exam-shell">' +
+          '<div>' +
+            '<div class="q-panel">' +
+              '<div class="q-meta"><span class="q-count" id="qCount">Question 1 of 50</span></div>' +
+              '<p class="q-text" id="qText"></p>' +
+              '<div class="options" id="optionsWrap"></div>' +
+              '<div class="verdict" id="verdict"></div>' +
+              '<div class="q-nav-row">' +
+                '<div class="left"><button class="btn btn-outline" onclick="prevQuestion()">\u2039 Previous</button></div>' +
+                '<div class="right"><button class="btn btn-outline" onclick="nextQuestion()">Next \u203a</button></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="side-panel">' +
+            '<h3 class="side-title">Progress</h3>' +
+            '<div class="progress-track"><span id="progressFill" style="width:0%"></span></div>' +
+            '<p class="omr-caption" id="progressLabel">0 of 0 answered</p>' +
+
+            '<div class="score-grid">' +
+              '<div class="score-cell correct"><div class="n" id="scoreCorrect">0</div><div class="l">Correct</div></div>' +
+              '<div class="score-cell incorrect"><div class="n" id="scoreIncorrect">0</div><div class="l">Incorrect</div></div>' +
+              '<div class="score-cell"><div class="n" id="scoreUnanswered">0</div><div class="l">Unanswered</div></div>' +
+              '<div class="score-cell"><div class="n" id="scoreTotal">0</div><div class="l">Total</div></div>' +
+            '</div>' +
+
+            '<h3 class="side-title">Answer Sheet</h3>' +
+            '<p class="omr-caption">Tap any number to jump straight to that question.</p>' +
+            '<div class="omr-grid" id="omrGrid"></div>' +
+            '<div class="omr-legend">' +
+              '<span><i></i>Unanswered</span>' +
+              '<span><i class="progress"></i>Current</span>' +
+              '<span><i class="done"></i>Correct</span>' +
+              '<span><i class="wrong"></i>Incorrect</span>' +
+            '</div>' +
+
+            '<button class="btn btn-gold" id="finishExamBtn" style="width:100%; margin-top:16px;" onclick="finishExam()">Finish Exam</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<div id="resultsView" style="display:none;"></div>' +
+      '</div>'
+    );
+  }
+
   function footerHTML(){
     return (
       '<footer class="site-foot">' +
@@ -67,8 +129,10 @@
   function mount(){
     var h = document.getElementById("site-header");
     var f = document.getElementById("site-footer");
+    var e = document.getElementById("site-examview");
     if(h) h.outerHTML = headerHTML();
     if(f) f.outerHTML = footerHTML();
+    if(e) e.outerHTML = examViewHTML();
   }
 
   if(document.readyState === "loading"){

@@ -249,8 +249,14 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
 .exam-card-head{ display:flex; align-items:center; justify-content:space-between; }
 .exam-num{ font-family:var(--font-mono); font-size:12px; color:var(--muted); }
 .exam-range{ font-family:var(--font-display); font-size:17px; color:var(--ink); margin:2px 0 4px; }
-.exam-actions{ display:flex; gap:8px; margin-top:auto; }
-.exam-actions .btn{ flex:1; }
+.exam-actions{ display:flex; flex-direction:column; gap:8px; margin-top:auto; }
+.exam-actions-row{ display:flex; gap:8px; }
+.exam-actions-row .btn{ flex:1; }
+.exam-actions .btn-merit{
+  width:100%;
+  white-space:nowrap;
+  text-align:center;
+}
 .status-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:6px; }
 .status-dot.done{ background:var(--emerald); }
 .status-dot.progress{ background:var(--gold); }
@@ -390,6 +396,214 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
 .results-grid .cell .l{ font-size:10.5px; color:var(--muted); text-transform:uppercase; margin-top:4px; }
 .results-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 
+/* ---------- Finish / results screen — dashboard layout (v3) ----------
+   Hero band with a CSS conic-gradient score ring, then a segmented
+   correct/wrong/unanswered bar and clean metric row below. */
+.rescard{
+  border-radius:var(--radius-l); overflow:hidden;
+  box-shadow:0 8px 24px -10px rgba(22,38,28,.25), var(--shadow-card);
+  margin-top:18px; background:var(--surface);
+}
+
+.rescard-head{
+  position:relative; overflow:hidden;
+  padding:36px 24px 30px; text-align:center; color:#fff;
+}
+.rescard-head::before{
+  content:""; position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255,255,255,.16), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(0,0,0,.12), transparent 60%);
+  pointer-events:none;
+}
+.tier-bg-excellent{ background:linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%); }
+.tier-bg-good{ background:linear-gradient(135deg, #d9a53f 0%, var(--gold) 100%); }
+.tier-bg-poor{ background:linear-gradient(135deg, #d4655a 0%, var(--maroon) 100%); }
+
+.rescard-badge{
+  position:relative; display:inline-block;
+  background:rgba(255,255,255,.2); backdrop-filter:blur(2px);
+  font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  padding:5px 14px; border-radius:999px; margin-bottom:22px;
+}
+
+.rescard-ring{
+  position:relative; width:148px; height:148px; margin:0 auto 18px;
+  border-radius:50%;
+  background:conic-gradient(#fff calc(var(--pct) * 1%), rgba(255,255,255,.28) 0);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.25);
+}
+.rescard-ring-inner{
+  width:118px; height:118px; border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.15);
+}
+.rescard-pct{ font-family:var(--font-display); font-size:34px; font-weight:700; color:#fff; line-height:1; }
+.rescard-pct span{ font-size:18px; font-weight:600; }
+.rescard-pct-l{ font-size:10.5px; color:rgba(255,255,255,.85); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+.rescard-msg{
+  position:relative; font-family:var(--font-display); font-size:22px; font-weight:700; color:#fff;
+}
+
+.rescard-body{ padding:26px 26px 28px; }
+
+.rescard-metrics{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  border:1px solid var(--line); border-radius:var(--radius-m);
+  margin-bottom:20px; overflow:hidden;
+}
+.rescard-metric{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:14px 6px; border-right:1px solid var(--line-soft);
+}
+.rescard-metric:last-child{ border-right:none; }
+.rescard-metric .v{ font-family:var(--font-display); font-size:20px; font-weight:700; }
+.rescard-metric .l{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; }
+.rescard-metric .v.c-correct{ color:var(--emerald-text); }
+.rescard-metric .v.c-wrong{ color:var(--maroon); }
+.rescard-metric .v.c-unanswered{ color:var(--ink-soft); }
+.rescard-metric .v.c-time{ color:var(--gold); }
+
+.rescard-bar{
+  display:flex; width:100%; height:10px; border-radius:999px; overflow:hidden;
+  background:var(--line-soft); margin-bottom:10px;
+}
+.rescard-bar .seg{ height:100%; }
+.rescard-bar .seg.correct{ background:var(--emerald); }
+.rescard-bar .seg.wrong{ background:var(--maroon); }
+.rescard-bar .seg.unanswered{ background:var(--line); }
+
+.rescard-bar-legend{
+  display:flex; gap:16px; flex-wrap:wrap; justify-content:center;
+  font-size:12px; color:var(--ink-soft); margin-bottom:22px;
+}
+.rescard-bar-legend span{ display:flex; align-items:center; gap:6px; }
+.rescard-bar-legend i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.rescard-bar-legend i.correct{ background:var(--emerald); }
+.rescard-bar-legend i.wrong{ background:var(--maroon); }
+.rescard-bar-legend i.unanswered{ background:var(--line); }
+
+.rescard-points{
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-m);
+  padding:14px 18px; margin-bottom:22px;
+}
+.rescard-points > div{ display:flex; flex-direction:column; gap:2px; }
+.rescard-points .l{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.3px; }
+.rescard-points .v{ font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--ink); }
+.rescard-points .v.neg{ color:var(--maroon); }
+
+@media (max-width:560px){
+  .rescard-metrics{ grid-template-columns:repeat(2,1fr); }
+  .rescard-metric{ border-bottom:1px solid var(--line-soft); }
+}
+
+/* ---------- Test-taker profile modal (subject-list.js) ---------- */
+.profile-overlay{
+  position:fixed; inset:0; z-index:999;
+  background:rgba(15,23,18,.55);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  animation:pwFadeIn .15s ease-out;
+}
+.profile-modal{
+  width:100%; max-width:380px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-l);
+  box-shadow:0 20px 50px -12px rgba(15,23,18,.45);
+  padding:28px 26px 24px; text-align:center;
+}
+.profile-seal{
+  width:44px; height:44px; margin:0 auto 12px;
+  border-radius:50%; background:var(--emerald-tint);
+  display:flex; align-items:center; justify-content:center;
+  font-size:19px;
+}
+.profile-title{ font-family:var(--font-display); font-size:19px; margin:0 0 8px; color:var(--ink); }
+.profile-desc{ font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0 0 18px; text-align:left; }
+.profile-field{ text-align:left; margin-bottom:12px; }
+.profile-field label{ display:block; font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+.profile-optional{ text-transform:none; letter-spacing:0; color:var(--muted); font-weight:400; }
+.profile-input{
+  width:100%; padding:10px 12px; font-size:14px;
+  border:1px solid var(--line); border-radius:var(--radius-s);
+  background:var(--paper); color:var(--ink);
+}
+.profile-input:focus{ outline:none; border-color:var(--emerald); background:var(--surface); }
+.profile-error{
+  display:none; color:var(--maroon); background:var(--maroon-tint);
+  font-size:12px; border-radius:var(--radius-s);
+  padding:8px 10px; margin:2px 0 4px; text-align:left;
+}
+.profile-error.show{ display:block; }
+.profile-actions{ display:flex; gap:10px; margin-top:16px; }
+.profile-actions .btn{ flex:1; }
+
+/* ---------- Personal exam log / "Merit List" (subject-list.js) ----------
+   Deliberately a vertical timeline rather than a data table — this is a
+   single browser's own attempt history, not a shared leaderboard, so the
+   design leans into "your practice log" rather than "official ranking". */
+.merit-overlay{
+  position:fixed; inset:0; z-index:998;
+  background:rgba(15,23,18,.6);
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 20px; overflow-y:auto;
+  animation:pwFadeIn .15s ease-out;
+}
+.merit-modal{
+  width:100%; max-width:640px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-l);
+  box-shadow:0 20px 50px -12px rgba(15,23,18,.45);
+  overflow:hidden;
+}
+.merit-head{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+  padding:22px 26px; border-bottom:1px solid var(--line); background:var(--paper);
+}
+.merit-eyebrow{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--gold); font-weight:700; margin-bottom:4px;
+}
+.merit-head h3{ font-family:var(--font-display); font-size:19px; margin:0; color:var(--ink); }
+.merit-who{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
+.merit-body{ padding:22px 26px 26px; max-height:66vh; overflow-y:auto; }
+
+.merit-empty{ text-align:center; color:var(--muted); font-size:13.5px; padding:30px 10px; }
+
+.merit-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+.merit-stat{ border:1px solid var(--line); border-radius:var(--radius-m); padding:12px 8px; text-align:center; background:var(--paper); }
+.merit-stat .l{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+.merit-stat .n{ font-family:var(--font-display); font-size:19px; font-weight:700; color:var(--ink); margin-top:4px; }
+.merit-stat .n.hi{ color:var(--emerald-text); }
+
+.merit-list{ position:relative; }
+.merit-item{
+  position:relative; display:flex; gap:14px; align-items:flex-start;
+  padding:14px 0 14px 16px; border-left:2px solid var(--line-soft);
+}
+.merit-item:last-child{ border-left-color:transparent; padding-bottom:2px; }
+.merit-rank{
+  font-size:17px; flex-shrink:0; width:26px; text-align:center;
+  margin-left:-15px; background:var(--surface); line-height:1.4;
+}
+.merit-main{ flex:1; min-width:0; }
+.merit-top{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.merit-name{ font-weight:700; color:var(--ink); font-size:13.5px; }
+.merit-date{ font-size:11px; color:var(--muted); }
+.merit-meta{ display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; font-size:12px; color:var(--ink-soft); align-items:center; }
+.merit-score{ font-family:var(--font-mono); font-weight:700; color:var(--ink); }
+.merit-status{ font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:.3px; }
+.merit-status.pass{ background:var(--emerald-tint); color:var(--emerald-text); }
+.merit-status.fail{ background:var(--maroon-tint); color:var(--maroon); }
+.merit-item.pass .merit-score{ color:var(--emerald-text); }
+.merit-item.fail .merit-score{ color:var(--maroon); }
+
+@media (max-width:520px){
+  .merit-stats{ grid-template-columns:repeat(2,1fr); }
+  .merit-head{ flex-direction:column; }
+}
+
 /* ---------- footer / empty state ---------- */
 .empty-note{
   border:1px dashed var(--line); border-radius:var(--radius-m); padding:16px 18px;
@@ -513,3 +727,24 @@ footer.site-foot{
 
 .pw-actions{ display:flex; gap:10px; margin-top:18px; }
 .pw-actions .btn{ flex:1; }
+
+
+/* ---------- Exam countdown timer ---------- */
+.exam-timer{
+  font-family:var(--font-mono);
+  font-size:15px;
+  font-weight:700;
+  padding:6px 14px;
+  border-radius:var(--radius-s);
+  border:1px solid var(--line);
+  background:var(--surface);
+  color:var(--ink);
+  min-width:72px;
+  text-align:center;
+  transition:color .15s ease, border-color .15s ease, background .15s ease;
+}
+.exam-timer.low{
+  color:var(--maroon);
+  border-color:var(--maroon);
+  background:var(--maroon-tint);
+}

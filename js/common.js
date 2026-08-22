@@ -23,27 +23,36 @@
    ============================================================ */
 
 const EXAM_SIZE = 50; // fixed questions per exam, per spec
+const SECONDS_PER_QUESTION = 30; // timer allowance per question
+const NEGATIVE_MARK = 0.25; // deducted per incorrect answer
+
+function examDurationSeconds(questionCount){
+  return Math.floor(questionCount * SECONDS_PER_QUESTION);
+}
 
 const SUBJECTS = [
+{ id: "combind",      name: "Combind",                      dataVar: "COMBIND_QUESTIONS",       page: "subjects/combind.html",      live: true },
   { id: "oop",          name: "Object-Oriented Programming", dataVar: "OOP_QUESTIONS", page: "subjects/oop.html",          live: true  },
   { id: "networking",   name: "Networking",                  dataVar: "NETWORKING_QUESTIONS",   page: "subjects/networking.html",   live: true  },
   { id: "database",     name: "Database",                    dataVar: "DATABASE_QUESTIONS",     page: "subjects/database.html",     live: true  },
   { id: "c",            name: "C Programming",                dataVar: "C_QUESTIONS",            page: "subjects/c.html",            live: true  },
   { id: "fundamentals", name: "Computer Fundamentals",         dataVar: "FUNDAMENTALS_QUESTIONS", page: "subjects/fundamentals.html", live: true  },
-  { id: "dsa",          name: "Data Structure & Algorithm",  dataVar: "DSA_QUESTIONS",           page: "subjects/dsa.html",          live: false },
+  { id: "dsa",          name: "Data Structure & Algorithm",  dataVar: "DSA_QUESTIONS",           page: "subjects/dsa.html",          live: true  },
   { id: "os",           name: "Operating System",             dataVar: "OS_QUESTIONS",            page: "subjects/os.html",           live: true  },
   { id: "computer-architecture", name: "Computer Architecture", dataVar: "COMPUTER_ARCHITECTURE_QUESTIONS", page: "subjects/computer-architecture.html", live: true },
   { id: "software-eng", name: "Software Engineering",         dataVar: "SOFTWARE_ENG_QUESTIONS",  page: "subjects/software-eng.html", live: true  },
-  { id: "ict",          name: "ICT",                          dataVar: "ICT_QUESTIONS",           page: "subjects/ict.html",          live: false },
-  { id: "english",      name: "English",                      dataVar: "ENGLISH_QUESTIONS",       page: "subjects/english.html",      live: false },
+{ id: "cloud-virtualization",          name: "Cloud & Virtualization",                          dataVar: "CLOUD_VIRTUALIZATION_QUESTIONS",           page: "subjects/cloud-virtualization.html",          live: true },
+  { id: "cybersecurity", name: "Cyber Security",               dataVar: "CYBERSECURITY_QUESTIONS", page: "subjects/cybersecurity.html", live: true  },
+  { id: "cryptography",  name: "Cryptography",                 dataVar: "CRYPTOGRAPHY_QUESTIONS",  page: "subjects/cryptography.html",  live: true  },
+  { id: "blockchain-dark-web", name: "Blockchain & Dark Web", dataVar: "BLOCKCHAIN_DARK_WEB_QUESTIONS", page: "subjects/blockchain-dark-web.html", live: true },
+
+
   { id: "bangla",       name: "Bangla",                       dataVar: "BANGLA_QUESTIONS",        page: "subjects/bangla.html",       live: false },
+{ id: "english",      name: "English",                      dataVar: "ENGLISH_QUESTIONS",       page: "subjects/english.html",      live: false },
   { id: "math",         name: "Mathematics",                  dataVar: "MATH_QUESTIONS",          page: "subjects/math.html",         live: false },
   { id: "gk",           name: "General Knowledge",            dataVar: "GK_QUESTIONS",             page: "subjects/gk.html",           live: false },
-  { id: "bd-affairs",   name: "Bangladesh Affairs",            dataVar: "BD_AFFAIRS_QUESTIONS",     page: "subjects/bd-affairs.html",   live: false },
-  { id: "intl-affairs", name: "International Affairs",         dataVar: "INTL_AFFAIRS_QUESTIONS",   page: "subjects/intl-affairs.html", live: false },
-  { id: "analytical",   name: "Analytical Ability",            dataVar: "ANALYTICAL_QUESTIONS",     page: "subjects/analytical.html",   live: false },
-  { id: "mental",       name: "Mental Ability",                dataVar: "MENTAL_QUESTIONS",         page: "subjects/mental.html",       live: false }
 ];
+
 
 function getSubject(id){
   return SUBJECTS.find(s => s.id === id) || null;
@@ -88,7 +97,8 @@ function emptyProgress(qCount){
     answers: new Array(qCount).fill(null),   // selected option index per question, null = unanswered
     correctMap: new Array(qCount).fill(null),// true/false once answered
     status: "not-started",                   // not-started | in-progress | completed
-    finishedAt: null
+    finishedAt: null,
+    examEndTime: null                        // epoch ms timestamp when the timer runs out
   };
 }
 
@@ -129,7 +139,6 @@ function renderHome(){
       card.innerHTML = `
         <div class="subject-card-top">
           <h3 class="subject-name">${subject.name}</h3>
-          <span class="subject-seal">${subject.name.charAt(0)}</span>
         </div>
         <div class="subject-stats">
           <span><b>${stats.total}</b> Questions</span>
@@ -146,10 +155,8 @@ function renderHome(){
       card.innerHTML = `
         <div class="subject-card-top">
           <h3 class="subject-name">${subject.name}</h3>
-          <span class="subject-seal">${subject.name.charAt(0)}</span>
         </div>
-        <div class="subject-stats"><span>Question bank not loaded yet</span></div>
-        <span class="pill pill-soon">Add data/${subject.dataVar.toLowerCase()}.js</span>
+        <div class="subject-stats"><span>Upcoming...</span></div>
       `;
     }
     grid.appendChild(card);

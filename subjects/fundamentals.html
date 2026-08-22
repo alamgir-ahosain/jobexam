@@ -23,7 +23,7 @@
 <div id="site-header"></div>
 
 <div class="wrap">
-  <p class="crumbs"><a href="../index.html">Home</a> &nbsp;/&nbsp; <a href="../exams.html">Exams</a> &nbsp;/&nbsp; <span id="subjectTitle">Subject</span></p>
+  <p class="crumbs"><a href="../index.html">Home</a> &nbsp;/&nbsp; <a href="../subject-list.html">Subject List</a> &nbsp;/&nbsp; <span id="subjectTitle">Subject</span></p>
 
   <!-- ============ SUBJECT HOME (overview + exam list) ============ -->
   <div id="subjectHome">
@@ -42,70 +42,7 @@
     <div class="grid" id="examList"></div>
   </div>
 
-  <!-- ============ EXAM VIEW (question interface) ============ -->
-  <div id="examView">
-    <div class="exam-top-bar">
-      <div>
-        <div class="exam-top-title" id="examTitleLabel">Exam</div>
-        <div class="sub" id="examSubLabel"></div>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-outline" onclick="exitToSubjectHome()">← Back to Exams</button>
-      </div>
-    </div>
-
-    <div id="examTakingArea" class="exam-shell">
-      <!-- question column -->
-      <div>
-        <div class="q-panel">
-          <div class="q-meta">
-            <span class="q-count" id="qCount">Question 1 of 50</span>
-          </div>
-          <p class="q-text" id="qText"></p>
-          <div class="options" id="optionsWrap"></div>
-          <div class="verdict" id="verdict"></div>
-
-          <div class="q-nav-row">
-            <div class="left">
-              <button class="btn btn-outline" onclick="prevQuestion()">‹ Previous</button>
-            </div>
-            <div class="right">
-              <button class="btn btn-outline" onclick="nextQuestion()">Next ›</button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- side panel: progress + OMR grid -->
-      <div class="side-panel">
-        <h3 class="side-title">Progress</h3>
-        <div class="progress-track"><span id="progressFill" style="width:0%"></span></div>
-        <p class="omr-caption" id="progressLabel">0 of 0 answered</p>
-
-        <div class="score-grid">
-          <div class="score-cell correct"><div class="n" id="scoreCorrect">0</div><div class="l">Correct</div></div>
-          <div class="score-cell incorrect"><div class="n" id="scoreIncorrect">0</div><div class="l">Incorrect</div></div>
-          <div class="score-cell"><div class="n" id="scoreUnanswered">0</div><div class="l">Unanswered</div></div>
-          <div class="score-cell"><div class="n" id="scoreTotal">0</div><div class="l">Total</div></div>
-        </div>
-
-        <h3 class="side-title">Answer Sheet</h3>
-        <p class="omr-caption">Tap any number to jump straight to that question.</p>
-        <div class="omr-grid" id="omrGrid"></div>
-        <div class="omr-legend">
-          <span><i></i>Unanswered</span>
-          <span><i class="progress"></i>Current</span>
-          <span><i class="done"></i>Correct</span>
-          <span><i class="wrong"></i>Incorrect</span>
-        </div>
-
-        <button class="btn btn-gold" id="finishExamBtn" style="width:100%; margin-top:16px;" onclick="finishExam()">Finish Exam</button>
-      </div>
-    </div>
-
-    <div id="resultsView" style="display:none;"></div>
-  </div>
+      <div id="site-examview"></div>
 
   <div id="site-footer"></div>
 </div>
@@ -113,7 +50,7 @@
 <script src="../js/common.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../data/fundamentals.js"></script>
-<script src="../js/exam.js"></script>
+<script src="../js/subject-list.js"></script>
 <script src="../js/layout.js"></script>
 <script src="../js/theme.js"></script>
 <script>
