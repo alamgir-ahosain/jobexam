@@ -1,10 +1,6 @@
 /* ============================================================
    JobExam — auth.js
    Password gate using SHA-256 hashes instead of plaintext.
-   NOTE: still not real security on a static site — a determined
-   person can watch the successful compare in DevTools, or
-   brute-force short passwords offline. This just stops the
-   passwords from being readable at a glance in the source.
 
    Once the correct password is entered, access stays unlocked
    for the rest of the browser tab's session (sessionStorage), so
