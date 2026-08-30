@@ -891,3 +891,58 @@ html[data-theme="dark"] .ticket-stub::after{ background:var(--surface); }
 .ticket-card.subject-ticket::before{ top:6px; opacity:.85; }
 .ticket-card.subject-ticket::after{ top:12px; left:16px; right:16px; opacity:.6; }
 .ticket-card.subject-ticket:hover::before{ border-color:var(--emerald-tint); }
+
+
+/* ---------- Visitor badge ---------- */
+.visitor-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:16px;
+  padding:8px 16px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--surface);
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--muted);
+}
+.visitor-dot{
+  width:7px; height:7px; border-radius:50%;
+  background:var(--emerald);
+  flex-shrink:0;
+  animation:visitorPulse 2s infinite;
+}
+@keyframes visitorPulse{
+  0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(28,138,82,.5); }
+  50%{ opacity:.6; box-shadow:0 0 0 4px rgba(28,138,82,0); }
+}
+.visitor-count{
+  font-weight:700;
+  color:var(--emerald-text);
+  font-size:13.5px;
+}/* ---------- Visitor badge ---------- */
+.visitor-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:16px;
+  padding:8px 16px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--surface);
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--muted);
+}
+.visitor-dot{
+  width:7px; height:7px; border-radius:50%;
+  background:var(--emerald);
+  flex-shrink:0;
+  animation:visitorPulse 2s infinite;
+}
+@keyframes visitorPulse{
+  0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(28,138,82,.5); }
+  50%{ opacity:.6; box-shadow:0 0 0 4px rgba(28,138,82,0); }
+}
+.visitor-count{
+  font-weight:700;
+  color:var(--emerald-text);
+  font-size:13.5px;
+}

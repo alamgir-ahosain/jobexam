@@ -19,11 +19,8 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <div id="site-header"></div>
-
 <div class="wrap">
-
   <!-- ============ HERO ============ -->
   <div class="hero">
     <p class="page-eyebrow">Portfolio · Project</p>
@@ -33,8 +30,12 @@
       <!-- <a class="btn" href="exams.html">Open Exam Practice App →</a> -->
       <!-- <a class="btn btn-outline" href="#about">About this project</a> -->
     </div>
+    <div class="visitor-badge">
+      <span class="visitor-dot"></span>
+      <span>Total Visitors:</span>
+      <span class="visitor-count" id="visitorCount">—</span>
+    </div>
   </div>
-
   <!-- ============ APP CTA - links to the current subject registry (exams.html) ============ -->
   <div class="app-cta">
     <div class="app-cta-text">
@@ -48,19 +49,6 @@
     </div>
     <a class="btn btn-gold" href="subject-list.html">View Subjects →</a>
   </div>
-
-  <!-- ============ YOUR MERIT LIST - personal, cross-subject practice log ============
-       Pulled entirely from this browser's own localStorage history. There's no
-       server and no shared leaderboard, so this can only ever rank this
-       device's own attempts against each other. -->
-  <!-- <div class="about-section" id="merit">
-    <h2 class="section-title">Your Merit List</h2>
-    <p class="page-desc" style="margin-bottom:18px;">Your best results across every subject, saved on this device only. Finish any exam to add it here.</p>
-    <div id="homeMeritList">
-      <div class="empty-note">Loading your results…</div>
-    </div>
-  </div> -->
-
   <!-- ============ ABOUT / MY WORK ============ -->
   <div class="about-section" id="about">
     <h2 class="section-title">About this work</h2>
@@ -77,13 +65,12 @@
       </ul>
     </div>
   </div>
-
   <div id="site-footer"></div>
 </div>
-
 <script src="js/common.js"></script>
 <script src="js/home-merit.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/theme.js"></script>
+<script src="js/visitor.js"></script>
 </body>
 </html>
