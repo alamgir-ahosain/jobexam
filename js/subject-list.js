@@ -221,6 +221,150 @@ function showMeritList(examIndex){
   document.addEventListener("keydown", onKeydown);
 }
 
+/* ---------------- Bookmarks ("Watchlist") ----------------
+   Per-subject, per-device list of questions marked important.
+   Stored by GLOBAL question index within the subject's full
+   question bank, so it survives across different exams/reopens. */
+
+function bookmarkKey(subjectId){
+  return `jobexam:bookmarks:${subjectId}`;
+}
+
+function loadBookmarks(subjectId){
+  try{
+    const raw = localStorage.getItem(bookmarkKey(subjectId));
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function saveBookmarks(subjectId, list){
+  try{ localStorage.setItem(bookmarkKey(subjectId), JSON.stringify(list)); }
+  catch(e){ /* storage unavailable — fail silently */ }
+}
+
+function getGlobalQIndex(){
+  // currentQ is 0-based within the current exam; convert to a
+  // 0-based index into the subject's full QUESTIONS array.
+  const { start } = examRange(currentExamIndex, QUESTIONS.length);
+  return (start - 1) + currentQ;
+}
+
+function isBookmarked(subjectId, globalIndex){
+  return loadBookmarks(subjectId).some(b => b.qIndex === globalIndex);
+}
+
+function toggleCurrentBookmark(){
+  if(currentExamIndex === null) return;
+  const globalIndex = getGlobalQIndex();
+  const q = QUESTIONS[globalIndex];
+  let list = loadBookmarks(SUBJECT.id);
+  const existingIdx = list.findIndex(b => b.qIndex === globalIndex);
+
+  if(existingIdx !== -1){
+    list.splice(existingIdx, 1); // un-bookmark
+  } else {
+    list.push({
+      qIndex: globalIndex,
+      examIndex: currentExamIndex,
+      question: q.question,
+      options: q.options,
+      answer: q.answer,
+      explanation: q.explanation,
+      savedAt: new Date().toISOString()
+    });
+  }
+  saveBookmarks(SUBJECT.id, list);
+  updateBookmarkButton();
+}
+
+function updateBookmarkButton(){
+  const btn = document.getElementById("bookmarkBtn");
+  if(!btn || currentExamIndex === null) return;
+  const marked = isBookmarked(SUBJECT.id, getGlobalQIndex());
+  btn.classList.toggle("active", marked);
+  btn.innerHTML = marked ? "&#9733;" : "&#9734;"; // ★ vs ☆
+  btn.title = marked ? "Remove bookmark" : "Bookmark this question";
+}
+
+function removeBookmark(subjectId, globalIndex){
+  const list = loadBookmarks(subjectId).filter(b => b.qIndex !== globalIndex);
+  saveBookmarks(subjectId, list);
+}
+
+/* Jump straight to a bookmarked question, opening its exam if needed. */
+function goToBookmark(examIndex, globalIndex){
+  document.getElementById("bookmarksOverlay")?.remove();
+  const proceed = () => {
+    startExam(examIndex);
+    const { start } = examRange(examIndex, QUESTIONS.length);
+    goTo(globalIndex - (start - 1));
+  };
+  if(isPreviewSubject()) requireProfile(proceed);
+  else requireAccess(() => requireProfile(proceed));
+}
+
+function showBookmarksModal(){
+  if(document.getElementById("bookmarksOverlay")) return;
+
+  const list = loadBookmarks(SUBJECT.id).sort((a,b) => a.qIndex - b.qIndex);
+  const letters = ["A","B","C","D"];
+
+  let bodyHtml;
+  if(list.length === 0){
+    bodyHtml = `<div class="merit-empty">No bookmarks yet for ${SUBJECT.name}. Tap the ☆ next to any question while taking an exam to save it here.</div>`;
+  } else {
+    bodyHtml = list.map(b => `
+      <div class="bookmark-item">
+        <div class="bookmark-top">
+          <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${(b.qIndex % EXAM_SIZE) + 1}</span>
+          <button class="bookmark-remove" data-remove="${b.qIndex}" title="Remove">&times;</button>
+        </div>
+        <p class="bookmark-q">${b.question}</p>
+        <div class="bookmark-answer">Answer: <b>${letters[b.answer]}. ${b.options[b.answer]}</b></div>
+        <button class="btn btn-outline" data-goto="${b.examIndex}|${b.qIndex}">Go to Question</button>
+      </div>
+    `).join("");
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "bookmarksOverlay";
+  overlay.className = "merit-overlay";
+  overlay.innerHTML = `
+    <div class="merit-modal" role="dialog" aria-modal="true" aria-labelledby="bookmarksTitle">
+      <div class="merit-head">
+        <div>
+          <div class="merit-eyebrow">Saved on this device</div>
+          <h3 id="bookmarksTitle">${SUBJECT.name} — Bookmarks (${list.length})</h3>
+        </div>
+        <button class="btn btn-outline" id="bookmarksClose" type="button">Close</button>
+      </div>
+      <div class="merit-body">${bodyHtml}</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelectorAll("[data-goto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const [examIndex, globalIndex] = btn.dataset.goto.split("|").map(Number);
+      goToBookmark(examIndex, globalIndex);
+    });
+  });
+  overlay.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      removeBookmark(SUBJECT.id, parseInt(btn.dataset.remove, 10));
+      overlay.remove();
+      showBookmarksModal();
+    });
+  });
+
+  function closeModal(){ document.removeEventListener("keydown", onKeydown); overlay.remove(); }
+  function onKeydown(e){ if(e.key === "Escape") closeModal(); }
+  document.getElementById("bookmarksClose").addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => { if(e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", onKeydown);
+}
+
+
 /* ---------------- Init: gate on password, THEN fetch questions ----------------
    Exception: PREVIEW_SUBJECT_ID (see common.js) never needs the password —
    it's a fixed 30-question demo anyone can try straight from the modal. */

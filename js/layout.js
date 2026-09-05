@@ -66,7 +66,10 @@
         '<div id="examTakingArea" class="exam-shell">' +
           '<div>' +
             '<div class="q-panel">' +
-              '<div class="q-meta"><span class="q-count" id="qCount">Question 1 of 50</span></div>' +
+              // '<div class="q-meta"><span class="q-count" id="qCount">Question 1 of 50</span></div>' +
+              '<div class="q-meta"><span class="q-count" id="qCount">Question 1 of 50</span>' +
+  '<button class="bookmark-btn" id="bookmarkBtn" type="button" onclick="toggleCurrentBookmark()" title="Bookmark this question">&#9734;</button>' +
+'</div>' +
               '<p class="q-text" id="qText"></p>' +
               '<div class="options" id="optionsWrap"></div>' +
               '<div class="verdict" id="verdict"></div>' +
