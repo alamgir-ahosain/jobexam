@@ -969,6 +969,17 @@ html[data-theme="dark"] .ticket-stub::after{ background:var(--surface); }
 }
 .bookmark-q{ font-size:14px; color:var(--ink); margin:0 0 8px; }
 .bookmark-answer{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
+
+.bookmark-answer-note{ font-size:12.5px; font-weight:700; margin:8px 0; color:var(--ink-soft); }
+.bookmark-answer-note.correct{ color:var(--emerald-text); }
+.bookmark-answer-note.incorrect{ color:var(--maroon); }
+
+.bookmark-explanation{
+  margin-top:4px; padding:12px 14px; border-radius:var(--radius-m);
+  background:var(--paper); border:1px solid var(--line); font-size:13.5px;
+}
+.bookmark-explanation .l{ font-weight:700; font-family:var(--font-display); font-size:14px; margin-bottom:4px; color:var(--ink); }
+.bookmark-explanation .t{ color:var(--ink-soft); }
 /* ---------- Bookmark button (in exam question panel) ---------- */
 .q-meta{ justify-content:space-between; }
 .bookmark-btn{

@@ -225,7 +225,13 @@ function showMeritList(examIndex){
    Per-subject, per-device list of questions marked important.
    Each bookmark is keyed by a fixed composite id "examIndex-qInExam"
    (both 0-based) — NOT a computed running index — so it can never
-   drift or collide with another question. */
+   drift or collide with another question.
+
+   Display: bookmarks are shown as a read-only review — question,
+   all four options (correct one highlighted, the user's own pick
+   highlighted if wrong), and the explanation — exactly like the
+   normal review-mode exam view. There is no "Go to Question" action;
+   this list IS the review. */
 
 function bookmarkKey(subjectId){
   return `jobexam:bookmarks:${subjectId}`;
@@ -298,49 +304,77 @@ function removeBookmark(subjectId, id){
   saveBookmarks(subjectId, list);
 }
 
-/* Jump straight to a bookmarked question, opening its exam if needed. */
-function goToBookmark(examIndex, qInExam){
-  document.getElementById("bookmarksOverlay")?.remove();
-  const proceed = () => {
-    startExam(examIndex);
-    goTo(qInExam);
-  };
-  if(isPreviewSubject()) requireProfile(proceed);
-  else requireAccess(() => requireProfile(proceed));
-}
-
+/* Renders one bookmarked question as a full read-only review card:
+   question text, all options (correct = green, user's wrong pick =
+   red, everything else dimmed), a short answered/correct note, and
+   the explanation. Looks up the user's live progress for that exam
+   so it always reflects their most recent answer on that question —
+   no separate "user's answer" needs to be stored in the bookmark
+   itself. */
 function bookmarksListHtml(list, letters){
   if(list.length === 0){
     return `<div class="merit-empty">No bookmarks yet for ${SUBJECT.name}. Tap the ☆ next to any question while taking an exam to save it here.</div>`;
   }
-  return list.map(b => `
-    <div class="bookmark-item">
-      <div class="bookmark-top">
-        <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${b.qInExam+1}</span>
-        <button class="bookmark-remove" data-remove="${b.id}" title="Remove">&times;</button>
+
+  return list.map(b => {
+    const prog = loadProgress(SUBJECT.id, b.examIndex);
+    const selected = prog ? prog.answers[b.qInExam] : null;
+    const hasAnswer = selected !== null && selected !== undefined;
+    const isCorrect = hasAnswer && selected === b.answer;
+
+    const optionsHtml = b.options.map((optText, i) => {
+      let cls = "opt dim";
+      if(i === b.answer) cls = "opt correct";
+      else if(hasAnswer && i === selected) cls = "opt incorrect";
+      return `
+        <div class="${cls}" style="pointer-events:none;">
+          <span class="opt-letter">${letters[i]}</span><span>${optText}</span>
+        </div>`;
+    }).join("");
+
+    const noteClass = !hasAnswer ? "" : (isCorrect ? "correct" : "incorrect");
+    const noteText = !hasAnswer
+      ? "Not answered"
+      : (isCorrect
+          ? "\u2713 You answered correctly"
+          : `\u2717 You answered ${letters[selected]} \u2014 correct is ${letters[b.answer]}`);
+
+    return `
+      <div class="bookmark-item">
+        <div class="bookmark-top">
+          <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${b.qInExam+1}</span>
+          <button class="bookmark-remove" data-remove="${b.id}" title="Remove">&times;</button>
+        </div>
+        <p class="bookmark-q">${b.question}</p>
+        <div class="options" style="margin-bottom:10px;">${optionsHtml}</div>
+        <div class="bookmark-answer-note ${noteClass}">${noteText}</div>
+        <div class="bookmark-explanation">
+          <div class="l">Explanation</div>
+          <div class="t">${b.explanation}</div>
+        </div>
       </div>
-      <p class="bookmark-q">${b.question}</p>
-      <div class="bookmark-answer">Answer: <b>${letters[b.answer]}. ${b.options[b.answer]}</b></div>
-      <button class="btn btn-outline" data-goto="${b.examIndex}|${b.qInExam}">Go to Question</button>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
+/* Single delegated click listener per container instead of one
+   listener per remove-button. Re-rendering a container (e.g. after
+   removing one bookmark) used to leave freshly-injected buttons
+   without a working listener if this was called again on stale
+   nodes; delegation avoids that class of bug entirely. */
 function wireBookmarkListButtons(container){
-  container.querySelectorAll("[data-goto]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const [examIndex, qInExam] = btn.dataset.goto.split("|").map(Number);
-      goToBookmark(examIndex, qInExam);
-    });
-  });
-  container.querySelectorAll("[data-remove]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      removeBookmark(SUBJECT.id, btn.dataset.remove);
-      // re-render whichever bookmark surface is currently open
-      if(document.getElementById("bookmarksOverlay")) { document.getElementById("bookmarksOverlay").remove(); showBookmarksModal(); }
-      const inlineBox = document.getElementById("resultsBookmarksBox");
-      if(inlineBox) renderResultsBookmarksBox();
-    });
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-remove]");
+    if(!btn) return;
+
+    removeBookmark(SUBJECT.id, btn.dataset.remove);
+
+    // re-render whichever bookmark surface is currently open
+    const overlay = document.getElementById("bookmarksOverlay");
+    if(overlay){ overlay.remove(); showBookmarksModal(); }
+
+    const inlineBox = document.getElementById("resultsBookmarksBox");
+    if(inlineBox) renderResultsBookmarksBox();
   });
 }
 
@@ -366,7 +400,7 @@ function showBookmarksModal(){
     </div>
   `;
   document.body.appendChild(overlay);
-  wireBookmarkListButtons(overlay);
+  wireBookmarkListButtons(overlay.querySelector(".merit-body"));
 
   function closeModal(){ document.removeEventListener("keydown", onKeydown); overlay.remove(); }
   function onKeydown(e){ if(e.key === "Escape") closeModal(); }
