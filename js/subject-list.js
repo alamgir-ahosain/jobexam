@@ -342,7 +342,7 @@ function bookmarksListHtml(list, letters){
     return `
       <div class="bookmark-item">
         <div class="bookmark-top">
-          <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${b.qInExam+1}</span>
+          <span class="bookmark-tag">Exam ${b.examIndex+1} &middot; Question ${b.qInExam+1}</span>
           <button class="bookmark-remove" data-remove="${b.id}" title="Remove">&times;</button>
         </div>
         <p class="bookmark-q">${b.question}</p>
@@ -358,11 +358,21 @@ function bookmarksListHtml(list, letters){
 }
 
 /* Single delegated click listener per container instead of one
-   listener per remove-button. Re-rendering a container (e.g. after
-   removing one bookmark) used to leave freshly-injected buttons
-   without a working listener if this was called again on stale
-   nodes; delegation avoids that class of bug entirely. */
+   listener per remove-button. IMPORTANT: this is called again every
+   time a container's contents are re-rendered (e.g. after removing a
+   bookmark). Containers like #resultsBookmarksBox are never destroyed
+   between renders — only their innerHTML changes — so without a guard,
+   calling this again would stack a second, third, fourth... listener
+   onto the SAME element every time a bookmark is removed. Each extra
+   listener still fires on the next click (event delegation keeps
+   working even after innerHTML changes), so clicks would misfire
+   against stale/removed bookmark ids and appear to "only remove one,
+   then get stuck until reload." A wired-flag on the container makes
+   wiring idempotent — safe to call on every render. */
 function wireBookmarkListButtons(container){
+  if(container.dataset.bookmarkWired === "1") return;
+  container.dataset.bookmarkWired = "1";
+
   container.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-remove]");
     if(!btn) return;
