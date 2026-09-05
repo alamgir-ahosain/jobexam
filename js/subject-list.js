@@ -223,8 +223,9 @@ function showMeritList(examIndex){
 
 /* ---------------- Bookmarks ("Watchlist") ----------------
    Per-subject, per-device list of questions marked important.
-   Stored by GLOBAL question index within the subject's full
-   question bank, so it survives across different exams/reopens. */
+   Each bookmark is keyed by a fixed composite id "examIndex-qInExam"
+   (both 0-based) — NOT a computed running index — so it can never
+   drift or collide with another question. */
 
 function bookmarkKey(subjectId){
   return `jobexam:bookmarks:${subjectId}`;
@@ -242,30 +243,36 @@ function saveBookmarks(subjectId, list){
   catch(e){ /* storage unavailable — fail silently */ }
 }
 
-function getGlobalQIndex(){
-  // currentQ is 0-based within the current exam; convert to a
-  // 0-based index into the subject's full QUESTIONS array.
-  const { start } = examRange(currentExamIndex, QUESTIONS.length);
-  return (start - 1) + currentQ;
+function makeBookmarkId(examIndex, qInExam){
+  return `${examIndex}-${qInExam}`;
 }
 
-function isBookmarked(subjectId, globalIndex){
-  return loadBookmarks(subjectId).some(b => b.qIndex === globalIndex);
+function isBookmarked(subjectId, examIndex, qInExam){
+  const id = makeBookmarkId(examIndex, qInExam);
+  return loadBookmarks(subjectId).some(b => b.id === id);
 }
 
+/* Reads currentExamIndex / currentQ at call-time — always the
+   question actually on screen right now. */
 function toggleCurrentBookmark(){
-  if(currentExamIndex === null) return;
-  const globalIndex = getGlobalQIndex();
-  const q = QUESTIONS[globalIndex];
+  if(currentExamIndex === null || !progress) return;
+
+  const examIndex = currentExamIndex;
+  const qInExam = currentQ;
+  const id = makeBookmarkId(examIndex, qInExam);
+  const q = getExamQuestions()[qInExam];
+  if(!q) return;
+
   let list = loadBookmarks(SUBJECT.id);
-  const existingIdx = list.findIndex(b => b.qIndex === globalIndex);
+  const existingIdx = list.findIndex(b => b.id === id);
 
   if(existingIdx !== -1){
-    list.splice(existingIdx, 1); // un-bookmark
+    list.splice(existingIdx, 1); // un-bookmark — removes ONLY this exact id
   } else {
     list.push({
-      qIndex: globalIndex,
-      examIndex: currentExamIndex,
+      id,
+      examIndex,
+      qInExam,
       question: q.question,
       options: q.options,
       answer: q.answer,
@@ -280,51 +287,68 @@ function toggleCurrentBookmark(){
 function updateBookmarkButton(){
   const btn = document.getElementById("bookmarkBtn");
   if(!btn || currentExamIndex === null) return;
-  const marked = isBookmarked(SUBJECT.id, getGlobalQIndex());
+  const marked = isBookmarked(SUBJECT.id, currentExamIndex, currentQ);
   btn.classList.toggle("active", marked);
   btn.innerHTML = marked ? "&#9733;" : "&#9734;"; // ★ vs ☆
   btn.title = marked ? "Remove bookmark" : "Bookmark this question";
 }
 
-function removeBookmark(subjectId, globalIndex){
-  const list = loadBookmarks(subjectId).filter(b => b.qIndex !== globalIndex);
+function removeBookmark(subjectId, id){
+  const list = loadBookmarks(subjectId).filter(b => b.id !== id);
   saveBookmarks(subjectId, list);
 }
 
 /* Jump straight to a bookmarked question, opening its exam if needed. */
-function goToBookmark(examIndex, globalIndex){
+function goToBookmark(examIndex, qInExam){
   document.getElementById("bookmarksOverlay")?.remove();
   const proceed = () => {
     startExam(examIndex);
-    const { start } = examRange(examIndex, QUESTIONS.length);
-    goTo(globalIndex - (start - 1));
+    goTo(qInExam);
   };
   if(isPreviewSubject()) requireProfile(proceed);
   else requireAccess(() => requireProfile(proceed));
 }
 
+function bookmarksListHtml(list, letters){
+  if(list.length === 0){
+    return `<div class="merit-empty">No bookmarks yet for ${SUBJECT.name}. Tap the ☆ next to any question while taking an exam to save it here.</div>`;
+  }
+  return list.map(b => `
+    <div class="bookmark-item">
+      <div class="bookmark-top">
+        <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${b.qInExam+1}</span>
+        <button class="bookmark-remove" data-remove="${b.id}" title="Remove">&times;</button>
+      </div>
+      <p class="bookmark-q">${b.question}</p>
+      <div class="bookmark-answer">Answer: <b>${letters[b.answer]}. ${b.options[b.answer]}</b></div>
+      <button class="btn btn-outline" data-goto="${b.examIndex}|${b.qInExam}">Go to Question</button>
+    </div>
+  `).join("");
+}
+
+function wireBookmarkListButtons(container){
+  container.querySelectorAll("[data-goto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const [examIndex, qInExam] = btn.dataset.goto.split("|").map(Number);
+      goToBookmark(examIndex, qInExam);
+    });
+  });
+  container.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      removeBookmark(SUBJECT.id, btn.dataset.remove);
+      // re-render whichever bookmark surface is currently open
+      if(document.getElementById("bookmarksOverlay")) { document.getElementById("bookmarksOverlay").remove(); showBookmarksModal(); }
+      const inlineBox = document.getElementById("resultsBookmarksBox");
+      if(inlineBox) renderResultsBookmarksBox();
+    });
+  });
+}
+
 function showBookmarksModal(){
   if(document.getElementById("bookmarksOverlay")) return;
 
-  const list = loadBookmarks(SUBJECT.id).sort((a,b) => a.qIndex - b.qIndex);
   const letters = ["A","B","C","D"];
-
-  let bodyHtml;
-  if(list.length === 0){
-    bodyHtml = `<div class="merit-empty">No bookmarks yet for ${SUBJECT.name}. Tap the ☆ next to any question while taking an exam to save it here.</div>`;
-  } else {
-    bodyHtml = list.map(b => `
-      <div class="bookmark-item">
-        <div class="bookmark-top">
-          <span class="bookmark-tag">Exam ${b.examIndex+1} · Q${(b.qIndex % EXAM_SIZE) + 1}</span>
-          <button class="bookmark-remove" data-remove="${b.qIndex}" title="Remove">&times;</button>
-        </div>
-        <p class="bookmark-q">${b.question}</p>
-        <div class="bookmark-answer">Answer: <b>${letters[b.answer]}. ${b.options[b.answer]}</b></div>
-        <button class="btn btn-outline" data-goto="${b.examIndex}|${b.qIndex}">Go to Question</button>
-      </div>
-    `).join("");
-  }
+  const list = loadBookmarks(SUBJECT.id).sort((a,b) => a.examIndex - b.examIndex || a.qInExam - b.qInExam);
 
   const overlay = document.createElement("div");
   overlay.id = "bookmarksOverlay";
@@ -338,24 +362,11 @@ function showBookmarksModal(){
         </div>
         <button class="btn btn-outline" id="bookmarksClose" type="button">Close</button>
       </div>
-      <div class="merit-body">${bodyHtml}</div>
+      <div class="merit-body">${bookmarksListHtml(list, letters)}</div>
     </div>
   `;
   document.body.appendChild(overlay);
-
-  overlay.querySelectorAll("[data-goto]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const [examIndex, globalIndex] = btn.dataset.goto.split("|").map(Number);
-      goToBookmark(examIndex, globalIndex);
-    });
-  });
-  overlay.querySelectorAll("[data-remove]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      removeBookmark(SUBJECT.id, parseInt(btn.dataset.remove, 10));
-      overlay.remove();
-      showBookmarksModal();
-    });
-  });
+  wireBookmarkListButtons(overlay);
 
   function closeModal(){ document.removeEventListener("keydown", onKeydown); overlay.remove(); }
   function onKeydown(e){ if(e.key === "Escape") closeModal(); }
@@ -364,6 +375,21 @@ function showBookmarksModal(){
   document.addEventListener("keydown", onKeydown);
 }
 
+/* Renders/refreshes the bookmarks box shown right on the results screen. */
+function renderResultsBookmarksBox(){
+  const box = document.getElementById("resultsBookmarksBox");
+  if(!box) return;
+  const letters = ["A","B","C","D"];
+  const list = loadBookmarks(SUBJECT.id)
+    .filter(b => b.examIndex === currentExamIndex)
+    .sort((a,b) => a.qInExam - b.qInExam);
+
+  box.innerHTML = `
+    <h3 class="side-title" style="margin-top:0;">&#9733; Bookmarked in this Exam (${list.length})</h3>
+    ${bookmarksListHtml(list, letters)}
+  `;
+  wireBookmarkListButtons(box);
+}
 
 /* ---------------- Init: gate on password, THEN fetch questions ----------------
    Exception: PREVIEW_SUBJECT_ID (see common.js) never needs the password —
@@ -433,6 +459,22 @@ function renderSubjectHeader(){
   document.getElementById("statTotalQ").textContent = total;
   document.getElementById("statTotalExams").textContent = exams;
   document.getElementById("statCompleted").textContent = `${completed}/${exams}`;
+
+  // Bookmarks entry point — inject once, above the exam list
+  if(!document.getElementById("bookmarksEntryBtn")){
+    const count = loadBookmarks(SUBJECT.id).length;
+    const btn = document.createElement("button");
+    btn.id = "bookmarksEntryBtn";
+    btn.className = "btn btn-outline";
+    btn.style.margin = "0 0 20px";
+    btn.innerHTML = `&#9733; My Bookmarks (${count})`;
+    btn.addEventListener("click", showBookmarksModal);
+    const home = document.getElementById("subjectHome");
+    const list = document.getElementById("examList");
+    if(home && list) home.insertBefore(btn, list);
+  } else {
+    document.getElementById("bookmarksEntryBtn").innerHTML = `&#9733; My Bookmarks (${loadBookmarks(SUBJECT.id).length})`;
+  }
 }
 
 function statusOf(examIndex){
@@ -756,6 +798,7 @@ function renderQuestion(){
 
   updateOmrGrid();
   updateProgressBar();
+  updateBookmarkButton();
 }
 
 function selectAnswer(optionIndex){
@@ -981,9 +1024,12 @@ function finishExam(){
           <button class="btn btn-gold" onclick="retakeExam()">Retake Exam</button>
           <button class="btn btn-outline" onclick="reviewFinishedExam()">Review Answers</button>
         </div>
+
+        <div id="resultsBookmarksBox" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);"></div>
       </div>
     </div>
   `;
+  renderResultsBookmarksBox();
 }
 
 /* Reopen the exam just finished, in read-only review mode, straight from

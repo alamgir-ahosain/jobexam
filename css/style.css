@@ -296,28 +296,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
 .q-count{ font-family:var(--font-mono); font-size:12.5px; color:var(--muted); }
 .q-text{ font-family:var(--font-display); font-size:19px; line-height:1.4; color:var(--ink); margin:0 0 20px; }
 
-/* ---------- Bookmark button (in exam question panel) ---------- */
-.q-meta{ justify-content:space-between; }
-.bookmark-btn{
-  border:none; background:transparent; cursor:pointer;
-  font-size:22px; line-height:1; color:var(--muted);
-  padding:2px 4px;
-}
-.bookmark-btn.active{ color:var(--gold); }
-
-/* ---------- Bookmarks list modal ---------- */
-.bookmark-item{
-  border:1px solid var(--line); border-radius:var(--radius-m);
-  padding:14px 16px; margin-bottom:12px; background:var(--paper);
-}
-.bookmark-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.bookmark-tag{ font-family:var(--font-mono); font-size:11px; color:var(--muted); }
-.bookmark-remove{
-  border:none; background:transparent; color:var(--maroon);
-  font-size:18px; cursor:pointer; line-height:1; padding:0 4px;
-}
-.bookmark-q{ font-size:14px; color:var(--ink); margin:0 0 8px; }
-.bookmark-answer{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
 .options{ display:flex; flex-direction:column; gap:10px; }
 .opt{
   display:flex; align-items:center; gap:12px;
@@ -968,3 +946,48 @@ html[data-theme="dark"] .ticket-stub::after{ background:var(--surface); }
   color:var(--emerald-text);
   font-size:13.5px;
 }
+
+/* ---------- Bookmark button (in exam question panel) ---------- */
+.q-meta{ justify-content:space-between; }
+.bookmark-btn{
+  border:none; background:transparent; cursor:pointer;
+  font-size:22px; line-height:1; color:var(--muted);
+  padding:2px 4px;
+}
+.bookmark-btn.active{ color:var(--gold); }
+
+/* ---------- Bookmarks list (modal + results screen) ---------- */
+.bookmark-item{
+  border:1px solid var(--line); border-radius:var(--radius-m);
+  padding:14px 16px; margin-bottom:12px; background:var(--paper);
+}
+.bookmark-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.bookmark-tag{ font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.bookmark-remove{
+  border:none; background:transparent; color:var(--maroon);
+  font-size:18px; cursor:pointer; line-height:1; padding:0 4px;
+}
+.bookmark-q{ font-size:14px; color:var(--ink); margin:0 0 8px; }
+.bookmark-answer{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
+/* ---------- Bookmark button (in exam question panel) ---------- */
+.q-meta{ justify-content:space-between; }
+.bookmark-btn{
+  border:none; background:transparent; cursor:pointer;
+  font-size:22px; line-height:1; color:var(--muted);
+  padding:2px 4px;
+}
+.bookmark-btn.active{ color:var(--gold); }
+
+/* ---------- Bookmarks list (modal + results screen) ---------- */
+.bookmark-item{
+  border:1px solid var(--line); border-radius:var(--radius-m);
+  padding:14px 16px; margin-bottom:12px; background:var(--paper);
+}
+.bookmark-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.bookmark-tag{ font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.bookmark-remove{
+  border:none; background:transparent; color:var(--maroon);
+  font-size:18px; cursor:pointer; line-height:1; padding:0 4px;
+}
+.bookmark-q{ font-size:14px; color:var(--ink); margin:0 0 8px; }
+.bookmark-answer{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; }
