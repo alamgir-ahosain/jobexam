@@ -1,5 +1,5 @@
 /* ============================================================
-   JobExam — subject-list.js
+   JobExam - subject-list.js
    Generic exam engine. Every subject page calls:
      initSubjectPage("cryptography");
    after auth.js and common.js have loaded. Questions are fetched
@@ -18,7 +18,7 @@ let examTimerInterval = null;  // interval handle for the countdown timer
 /* ---------------- Test-taker profile (name, no login) ----------------
    Collected once per browser, the first time someone actually starts/
    resumes/retakes an exam. Reused after that so they're never asked
-   again on this device. This is NOT authentication — there's no
+   again on this device. This is NOT authentication - there's no
    server, so nothing stops someone from typing any name they like.
    It only exists so their own personal exam log (see below) has a
    name attached to it, which is why every attempt is also labelled
@@ -110,7 +110,7 @@ function showProfileModal(onSuccess){
 /* ---------------- Personal exam history ("Merit List") ----------------
    Pure client-side, per-browser log of every completed attempt at a
    given subject+exam. There is no shared server, so this can only ever
-   rank THIS device's own attempts against each other — it is a personal
+   rank THIS device's own attempts against each other - it is a personal
    practice log, not a real leaderboard against other test-takers. */
 
 function historyKey(subjectId, examIndex){
@@ -224,12 +224,12 @@ function showMeritList(examIndex){
 /* ---------------- Bookmarks ("Watchlist") ----------------
    Per-subject, per-device list of questions marked important.
    Each bookmark is keyed by a fixed composite id "examIndex-qInExam"
-   (both 0-based) — NOT a computed running index — so it can never
+   (both 0-based) - NOT a computed running index - so it can never
    drift or collide with another question.
 
-   Display: bookmarks are shown as a read-only review — question,
+   Display: bookmarks are shown as a read-only review - question,
    all four options (correct one highlighted, the user's own pick
-   highlighted if wrong), and the explanation — exactly like the
+   highlighted if wrong), and the explanation - exactly like the
    normal review-mode exam view. There is no "Go to Question" action;
    this list IS the review. */
 
@@ -246,7 +246,7 @@ function loadBookmarks(subjectId){
 
 function saveBookmarks(subjectId, list){
   try{ localStorage.setItem(bookmarkKey(subjectId), JSON.stringify(list)); }
-  catch(e){ /* storage unavailable — fail silently */ }
+  catch(e){ /* storage unavailable - fail silently */ }
 }
 
 function makeBookmarkId(examIndex, qInExam){
@@ -258,7 +258,7 @@ function isBookmarked(subjectId, examIndex, qInExam){
   return loadBookmarks(subjectId).some(b => b.id === id);
 }
 
-/* Reads currentExamIndex / currentQ at call-time — always the
+/* Reads currentExamIndex / currentQ at call-time - always the
    question actually on screen right now. */
 function toggleCurrentBookmark(){
   if(currentExamIndex === null || !progress) return;
@@ -273,7 +273,7 @@ function toggleCurrentBookmark(){
   const existingIdx = list.findIndex(b => b.id === id);
 
   if(existingIdx !== -1){
-    list.splice(existingIdx, 1); // un-bookmark — removes ONLY this exact id
+    list.splice(existingIdx, 1); // un-bookmark - removes ONLY this exact id
   } else {
     list.push({
       id,
@@ -308,7 +308,7 @@ function removeBookmark(subjectId, id){
    question text, all options (correct = green, user's wrong pick =
    red, everything else dimmed), a short answered/correct note, and
    the explanation. Looks up the user's live progress for that exam
-   so it always reflects their most recent answer on that question —
+   so it always reflects their most recent answer on that question -
    no separate "user's answer" needs to be stored in the bookmark
    itself. */
 function bookmarksListHtml(list, letters){
@@ -361,14 +361,14 @@ function bookmarksListHtml(list, letters){
    listener per remove-button. IMPORTANT: this is called again every
    time a container's contents are re-rendered (e.g. after removing a
    bookmark). Containers like #resultsBookmarksBox are never destroyed
-   between renders — only their innerHTML changes — so without a guard,
+   between renders - only their innerHTML changes - so without a guard,
    calling this again would stack a second, third, fourth... listener
    onto the SAME element every time a bookmark is removed. Each extra
    listener still fires on the next click (event delegation keeps
    working even after innerHTML changes), so clicks would misfire
    against stale/removed bookmark ids and appear to "only remove one,
    then get stuck until reload." A wired-flag on the container makes
-   wiring idempotent — safe to call on every render. */
+   wiring idempotent - safe to call on every render. */
 function wireBookmarkListButtons(container){
   if(container.dataset.bookmarkWired === "1") return;
   container.dataset.bookmarkWired = "1";
@@ -402,7 +402,7 @@ function showBookmarksModal(){
       <div class="merit-head">
         <div>
           <div class="merit-eyebrow">Saved on this device</div>
-          <h3 id="bookmarksTitle">${SUBJECT.name} — Bookmarks (${list.length})</h3>
+          <h3 id="bookmarksTitle">${SUBJECT.name} - Bookmarks (${list.length})</h3>
         </div>
         <button class="btn btn-outline" id="bookmarksClose" type="button">Close</button>
       </div>
@@ -436,7 +436,7 @@ function renderResultsBookmarksBox(){
 }
 
 /* ---------------- Init: gate on password, THEN fetch questions ----------------
-   Exception: PREVIEW_SUBJECT_ID (see common.js) never needs the password —
+   Exception: PREVIEW_SUBJECT_ID (see common.js) never needs the password -
    it's a fixed 30-question demo anyone can try straight from the modal. */
 
 function isPreviewSubject(){
@@ -448,7 +448,7 @@ async function initSubjectPage(subjectId){
   if(!SUBJECT){ console.error("Unknown subject:", subjectId); return; }
 
   document.getElementById("subjectTitle").textContent = SUBJECT.name;
-  document.title = SUBJECT.name + " — JobExam";
+  document.title = SUBJECT.name + " - JobExam";
 
   const loadQuestions = async () => {
     try{
@@ -480,10 +480,10 @@ async function initSubjectPage(subjectId){
     return;
   }
 
-  // Nothing is fetched yet — show a locked placeholder immediately.
-  document.getElementById("statTotalQ").textContent = "—";
-  document.getElementById("statTotalExams").textContent = "—";
-  document.getElementById("statCompleted").textContent = "—";
+  // Nothing is fetched yet - show a locked placeholder immediately.
+  document.getElementById("statTotalQ").textContent = "-";
+  document.getElementById("statTotalExams").textContent = "-";
+  document.getElementById("statCompleted").textContent = "-";
   document.getElementById("examList").innerHTML =
     `<div class="empty-note">Enter the access password to view this subject's exams.</div>`;
 
@@ -504,7 +504,7 @@ function renderSubjectHeader(){
   document.getElementById("statTotalExams").textContent = exams;
   document.getElementById("statCompleted").textContent = `${completed}/${exams}`;
 
-  // Bookmarks entry point — inject once, above the exam list
+  // Bookmarks entry point - inject once, above the exam list
   if(!document.getElementById("bookmarksEntryBtn")){
     const count = loadBookmarks(SUBJECT.id).length;
     const btn = document.createElement("button");
@@ -545,7 +545,7 @@ function renderExamList(){
     const card = document.createElement("div");
     card.className = "ticket-card";
 
-    // seal + stub style per status — an icon, not the exam number
+    // seal + stub style per status - an icon, not the exam number
     // (the number already appears once, in the card title below)
     let sealClass = "", sealGlyph = "&#128221;", statusClass = ""; // 📝 not started
     if(st.key === "done"){
@@ -613,7 +613,7 @@ function renderExamList(){
             else startExam(idx); // start / resume just opens the exam at its saved state
           });
         };
-        // Password-gate taking/resuming/retaking an exam — except the
+        // Password-gate taking/resuming/retaking an exam - except the
         // free preview subject, which never needs it. If the tab is
         // already unlocked this session (e.g. via the subject card on the
         // registry page), this runs immediately with no extra prompt.
@@ -656,7 +656,7 @@ function startExamTimer(){
   const timerEl = document.getElementById("examTimer");
   if(!timerEl) return;
 
-  // Review mode (already completed) has no countdown — hide it.
+  // Review mode (already completed) has no countdown - hide it.
   if(progress.status === "completed"){
     timerEl.style.display = "none";
     return;
@@ -684,7 +684,7 @@ function startExamTimer(){
   examTimerInterval = setInterval(tick, 1000);
 }
 
-/* Called when the countdown reaches zero — finishes the exam
+/* Called when the countdown reaches zero - finishes the exam
    automatically without requiring the user to click "Finish Exam". */
 function autoFinishExam(){
   if(!progress || progress.status === "completed") return; // guard double-fire
@@ -714,14 +714,14 @@ function startExam(examIndex){
 
   // Set the timer deadline the first time this attempt starts. On resume,
   // examEndTime is already saved, so the countdown continues from where
-  // it left off in real wall-clock time — even across page reloads.
+  // it left off in real wall-clock time - even across page reloads.
   if(progress.status === "in-progress" && !progress.examEndTime){
     progress.examEndTime = Date.now() + examDurationSeconds(count) * 1000;
     saveProgress(SUBJECT.id, examIndex, progress);
   }
 
   currentQ = 0;
-  // resume at first unanswered question, if any — but only for exams still
+  // resume at first unanswered question, if any - but only for exams still
   // in progress. Completed exams are opened in read-only review mode, so
   // there's no "next unanswered" to resume to; always start at question 1.
   if(progress.status !== "completed"){
@@ -774,7 +774,7 @@ function renderQuestion(){
   const answered = progress.answers[currentQ];
   // Once an exam is marked "completed", it opens in read-only review mode:
   // every option's correctness is revealed. While an exam is still in
-  // progress, options never reveal correct/incorrect — an answered
+  // progress, options never reveal correct/incorrect - an answered
   // question just shows which option was picked (locked, no verdict).
   const reviewMode = progress.status === "completed";
   const letters = ["A","B","C","D"];
@@ -794,13 +794,13 @@ function renderQuestion(){
         else if(i === answered) btn.classList.add("incorrect");
         else btn.classList.add("dim");
       } else {
-        // left blank when the exam was finished — reveal the correct
+        // left blank when the exam was finished - reveal the correct
         // answer, but never make it clickable again.
         if(i === q.answer) btn.classList.add("correct");
         else btn.classList.add("dim");
       }
     } else {
-      // Exam still in progress — options always stay clickable so the
+      // Exam still in progress - options always stay clickable so the
       // user can change their mind at any time (e.g. after jumping back
       // to a previous question). Only the correctness reveal is locked
       // until review mode; the previously picked option is highlighted
@@ -817,18 +817,18 @@ function renderQuestion(){
       const wasCorrect = answered === q.answer;
       verdict.className = "verdict show " + (wasCorrect ? "correct" : "incorrect");
       verdict.innerHTML = `
-        <div class="verdict-head">${wasCorrect ? "✓ Correct" : "✗ Incorrect"}${!wasCorrect ? ` — correct answer is ${letters[q.answer]}` : ""}</div>
+        <div class="verdict-head">${wasCorrect ? "✓ Correct" : "✗ Incorrect"}${!wasCorrect ? ` - correct answer is ${letters[q.answer]}` : ""}</div>
         <div class="verdict-exp">${q.explanation}</div>
       `;
     } else {
       verdict.className = "verdict show incorrect";
       verdict.innerHTML = `
-        <div class="verdict-head">Not Answered — correct answer is ${letters[q.answer]}</div>
+        <div class="verdict-head">Not Answered - correct answer is ${letters[q.answer]}</div>
         <div class="verdict-exp">${q.explanation}</div>
       `;
     }
   } else {
-    // No inline verdict/explanation while the exam is in progress —
+    // No inline verdict/explanation while the exam is in progress -
     // answers auto-advance to the next question instead.
     verdict.className = "verdict";
     verdict.innerHTML = "";
@@ -846,7 +846,7 @@ function renderQuestion(){
 }
 
 function selectAnswer(optionIndex){
-  if(progress.status === "completed") return; // exam finished — review mode is read-only
+  if(progress.status === "completed") return; // exam finished - review mode is read-only
   const qs = getExamQuestions();
   const q = qs[currentQ];
   const wasUnanswered = progress.answers[currentQ] === null;
@@ -860,7 +860,7 @@ function selectAnswer(optionIndex){
 
   // Only auto-advance the first time a question is answered. Changing an
   // already-answered question (after jumping back to it) just updates the
-  // selection in place — no forced navigation away, since the user came
+  // selection in place - no forced navigation away, since the user came
   // back on purpose to fix their answer.
   if(wasUnanswered){
     const total = qs.length;
@@ -908,7 +908,7 @@ function updateOmrGrid(){
   const grid = document.getElementById("omrGrid");
   // Correct/incorrect coloring on the answer sheet is a review-only
   // feature. While the exam is still in progress, an answered bubble
-  // only shows as "answered" (neutral) — never green or red.
+  // only shows as "answered" (neutral) - never green or red.
   const reviewMode = progress.status === "completed";
   [...grid.children].forEach((b, i) => {
     b.classList.remove("current","correct","incorrect","answered");
@@ -958,7 +958,7 @@ function renderScorePanel(){
   const scoreGrid = document.querySelector(".side-panel .score-grid");
 
   if(reviewMode){
-    // Correct/Incorrect/Unanswered breakdown is a review-only feature —
+    // Correct/Incorrect/Unanswered breakdown is a review-only feature -
     // only reveal it once the exam is finished and reopened for review.
     const correct = progress.correctMap.filter(v => v === true).length;
     const incorrect = progress.correctMap.filter(v => v === false).length;
@@ -1077,7 +1077,7 @@ function finishExam(){
 }
 
 /* Reopen the exam just finished, in read-only review mode, straight from
-   the results screen — same view as clicking "Review Answers" on the
+   the results screen - same view as clicking "Review Answers" on the
    subject's exam list. Progress is already saved as completed, so this
    just re-runs the normal exam view render pipeline. */
 function reviewFinishedExam(){

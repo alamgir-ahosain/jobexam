@@ -23,6 +23,10 @@
   --gold:      #c9932f;
   --gold-tint: #f8eed7;
 
+
+ --current-ring: #7c5cbf;
+  --current-ring-tint: rgba(124,92,191,.18);
+
   --font-display: Georgia, 'Noto Serif', 'Times New Roman', serif;
   --font-body: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans', Arial, sans-serif;
   --font-mono: 'Consolas', 'SFMono-Regular', 'Courier New', monospace;
@@ -32,6 +36,8 @@
   --radius-l: 14px;
   --shadow-card: 0 1px 2px rgba(22,38,28,.06), 0 6px 16px -8px rgba(22,38,28,.12);
 }
+
+
 
 /* ---------- Dark theme ----------
    Toggled by setting data-theme="dark" on <html> (see theme.js).
@@ -57,6 +63,9 @@ html[data-theme="dark"]{
 
   --gold:      #e0ac52;
   --gold-tint: rgba(224,172,82,.16);
+
+ --current-ring: #a58ce0;
+  --current-ring-tint: rgba(165,140,224,.22);
 
   --shadow-card: 0 1px 2px rgba(0,0,0,.5), 0 8px 20px -10px rgba(0,0,0,.65);
 }
@@ -363,7 +372,29 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
   font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);
   display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
 }
-.omr-bubble.current{ border-color:var(--emerald); box-shadow:0 0 0 3px var(--emerald-tint); font-weight:700; }
+
+
+.omr-bubble.current{
+  border-color:var(--current-ring);
+  border-width:2.5px;
+  box-shadow:0 0 0 3px var(--current-ring), 0 0 0 6px var(--current-ring-tint);
+  font-weight:700;
+  transform:scale(1.08);
+  z-index:1;
+  position:relative;
+}
+/* Current ring must stay visible even when the bubble is also
+   answered/correct/incorrect — outline sits outside the fill color
+   so "you are here" never gets absorbed into the result color. */
+.omr-bubble.current.answered,
+.omr-bubble.current.correct,
+.omr-bubble.current.incorrect{
+  outline:3px solid var(--current-ring);
+  outline-offset:2px;
+  box-shadow:none;
+}
+
+
 .omr-bubble.correct{ background:var(--emerald); border-color:var(--emerald-dark); color:#fff; }
 .omr-bubble.incorrect{ background:var(--maroon); border-color:#8f2f26; color:#fff; }
 /* Neutral "answered" state used while an exam is still in progress —
@@ -373,8 +404,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:none; }
 .omr-legend span{ display:flex; align-items:center; gap:5px; }
 .omr-legend i{ width:10px; height:10px; border-radius:50%; display:inline-block; border:1.5px solid var(--muted); }
 .omr-legend i.done{ background:var(--emerald); border-color:var(--emerald-dark); }
-.omr-legend i.progress{ background:var(--emerald); border-color:var(--emerald); box-shadow:0 0 0 2px var(--emerald-tint); }
-.omr-legend i.wrong{ background:var(--maroon); border-color:#8f2f26; }
+.omr-legend i.progress{ background:var(--surface); border-color:var(--current-ring); box-shadow:0 0 0 2px var(--current-ring-tint); }.omr-legend i.wrong{ background:var(--maroon); border-color:#8f2f26; }
 .omr-legend i.answered{ background:var(--gold); border-color:#a5741f; }
 
 /* ---------- Finish / results screen ---------- */

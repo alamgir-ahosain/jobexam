@@ -1,0 +1,5 @@
+{
+  "framework": null,
+  "buildCommand": "rm -rf data && git clone --depth 1 https://${QUESTIONS_REPO_TOKEN}@github.com/alamgir-ahosain/jobexam-data.git data && rm -rf data/.git",
+  "outputDirectory": "."
+}
